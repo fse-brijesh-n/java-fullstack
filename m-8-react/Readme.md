@@ -755,3 +755,764 @@ Solution using Module 00 concepts:
 ---
 
 This is the complete Module 00 of the handbook. If you want me to continue with Module 01: React Setup, please say “continue”.
+
+Module 01: React Setup
+
+1. Overview
+
+This module covers the foundational tools and configuration required to set up a React development environment. You will learn about npm (Node Package Manager), different ways to scaffold a React application, project structure, dependency management files (package.json and package-lock.json), and environment variables using .env files.
+
+Understanding this module is essential before writing any React code because it establishes the foundation for building, running, and deploying React applications.
+
+---
+
+2. npm
+
+2.1 Definition
+
+npm stands for Node Package Manager. It is the default package manager for Node.js, used to install, share, and manage dependencies in JavaScript projects. npm consists of:
+
+· A command-line tool (npm)
+· An online registry (npmjs.com) where packages are published
+· A set of scripts and configuration files to manage dependencies
+
+2.2 Why It Exists
+
+Before npm, developers had to manually download and include JavaScript libraries. npm solves this by:
+
+· Automating dependency installation
+· Managing versions
+· Enabling easy sharing of reusable code
+· Running scripts (build, test, start)
+
+2.3 Purpose
+
+· Install project dependencies
+· Manage global tools
+· Run scripts defined in package.json
+· Publish your own packages
+
+2.4 Prerequisites
+
+· Node.js installed (includes npm)
+· Basic command-line knowledge
+
+2.5 Core Concepts
+
+· Packages: Reusable pieces of code (libraries, frameworks, tools)
+· Dependencies: Packages required by your project
+· Semantic Versioning (SemVer): Version format MAJOR.MINOR.PATCH
+· Registry: Central repository (npmjs.com)
+
+2.6 Syntax / Common Commands
+
+```bash
+# Initialize a new package.json
+npm init
+
+# Initialize with defaults
+npm init -y
+
+# Install a dependency (local)
+npm install <package-name>
+
+# Install as dev dependency
+npm install <package-name> --save-dev
+
+# Install globally
+npm install -g <package-name>
+
+# Remove a dependency
+npm uninstall <package-name>
+
+# Run a script
+npm run <script-name>
+
+# List installed packages
+npm list
+
+# Update packages
+npm update
+```
+
+2.7 Basic Example
+
+```bash
+# Create a new project folder
+mkdir my-app
+cd my-app
+
+# Initialize package.json
+npm init -y
+
+# Install React and React DOM
+npm install react react-dom
+
+# Install a dev dependency
+npm install --save-dev vite
+```
+
+After running npm install, a node_modules folder is created, and dependencies are added to package.json.
+
+2.8 Practical Example
+
+Setting up a React project with npm:
+
+```bash
+npm init -y
+npm install react react-dom
+npm install --save-dev @vitejs/plugin-react vite
+```
+
+2.9 Real-World Usage
+
+Every modern JavaScript project uses npm (or an alternative like Yarn/pnpm) to manage dependencies. In React development, you'll use npm to install libraries like React Router, Axios, Redux, etc.
+
+2.10 Common Mistakes
+
+· Forgetting to save dependencies (--save is default in npm 5+, but still be aware)
+· Installing global packages when local is sufficient
+· Not using package-lock.json or ignoring version conflicts
+· Using npm install with wrong flags
+
+2.11 Best Practices
+
+· Use npm install to add dependencies (it updates package.json automatically)
+· Use --save-dev for build/test tools
+· Commit package-lock.json to version control
+· Use npm ci in CI/CD for reproducible installs
+
+2.12 Interview Questions
+
+Q1: What is npm?
+Answer: npm is the default package manager for Node.js, used to install, manage, and share JavaScript packages. It also provides a command-line interface and an online registry.
+
+Q2: What is the difference between dependencies and devDependencies?
+Answer: dependencies are required for the application to run in production, while devDependencies are only needed during development and testing (e.g., build tools, testing frameworks).
+
+Q3: What is Semantic Versioning?
+Answer: Semantic Versioning (SemVer) uses a three-part version number MAJOR.MINOR.PATCH to communicate compatibility. Incrementing MAJOR indicates breaking changes, MINOR adds backward-compatible features, and PATCH fixes bugs.
+
+---
+
+3. npm React App (Create React App)
+
+3.1 Definition
+
+Create React App (CRA) is an officially supported, zero-configuration tool for setting up a React application. It abstracts away build configuration (webpack, Babel) and provides a pre-configured environment with a development server, testing, and production build scripts.
+
+Note: CRA is being phased out in favor of more modern tools like Vite. The React team no longer recommends it for new projects. However, it is still widely used and relevant for legacy projects and learning.
+
+3.2 Why It Exists
+
+Setting up React manually requires configuring Babel, webpack, ESLint, etc. CRA solved this by providing a batteries-included template, allowing developers to start coding immediately.
+
+3.3 Purpose
+
+· Quick React project initialization
+· Standardized project structure
+· Built-in development server with hot reload
+· Production build optimization
+
+3.4 Prerequisites
+
+· Node.js and npm
+· Basic terminal knowledge
+
+3.5 How to Create a React App with npm
+
+```bash
+npx create-react-app my-app
+cd my-app
+npm start
+```
+
+npx is used to run the package without globally installing it. It downloads the latest CRA template.
+
+3.6 Project Structure (CRA)
+
+```
+my-app/
+├── node_modules/
+├── public/
+│   ├── index.html
+│   └── ...
+├── src/
+│   ├── App.js
+│   ├── App.css
+│   ├── index.js
+│   └── ...
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
+```
+
+3.7 Key Files
+
+· public/index.html – main HTML file where React mounts
+· src/index.js – entry point, renders <App /> into the root DOM node
+· src/App.js – root component
+
+3.8 Advantages
+
+· Zero configuration
+· Includes testing setup (Jest)
+· Built-in environment variable support
+· Easy to eject (if needed)
+
+3.9 Disadvantages
+
+· Slower build times (webpack based)
+· Heavy dependencies
+· Not easily customizable without ejecting
+· Being deprecated in favor of Vite/Next.js
+
+3.10 Comparison: CRA vs Vite
+
+Feature Create React App Vite
+Build Tool Webpack esbuild / Rollup
+Dev Server Speed Slower Very fast (ES modules)
+Configuration Hidden Minimal (vite.config.js)
+Production Build Webpack Rollup
+Current Status Deprecated Recommended
+
+3.11 Interview Questions
+
+Q: What is Create React App?
+Answer: It is a zero-configuration tool for creating React applications, providing a pre-configured setup with webpack, Babel, and development server.
+
+Q: Why is CRA being phased out?
+Answer: CRA is becoming less recommended due to slower performance and lack of flexibility. Modern tools like Vite offer faster builds and more control. The React team now recommends using frameworks like Next.js or Vite for new projects.
+
+---
+
+4. Global npm App
+
+4.1 Definition
+
+A global npm package is installed system-wide, making its command-line tools available from any directory. Global packages are typically CLI tools (e.g., create-react-app, vite, nodemon).
+
+4.2 Why It Exists
+
+Some tools are used across multiple projects and not tied to a specific project. Installing them globally allows convenient access from anywhere.
+
+4.3 Installation
+
+```bash
+npm install -g <package-name>
+```
+
+Example:
+
+```bash
+npm install -g create-react-app
+```
+
+After installation, you can run:
+
+```bash
+create-react-app my-app
+```
+
+4.4 Common Global Packages
+
+· nodemon – auto-restart Node.js server
+· eslint – linting tool
+· vite – build tool
+· typescript – TypeScript compiler
+
+4.5 When to Use Global vs Local
+
+· Global: CLI tools that are not part of the project's runtime dependencies (e.g., code generators).
+· Local: All project-specific dependencies.
+
+4.6 Best Practices
+
+· Prefer npx to run one-off commands without global install (e.g., npx create-react-app my-app).
+· Avoid installing too many global packages to prevent version conflicts.
+· Use npm ls -g --depth=0 to list global packages.
+
+4.7 Interview Questions
+
+Q: What is the difference between global and local npm packages?
+Answer: Global packages are installed system-wide and available as command-line tools from any directory, while local packages are installed in the node_modules of a specific project and only available within that project context.
+
+---
+
+5. Vite App
+
+5.1 Definition
+
+Vite is a modern build tool that provides a faster and leaner development experience for web projects. It uses native ES modules in development and bundles with Rollup in production. Vite is not limited to React; it supports Vue, Svelte, etc., but has excellent React support via plugins.
+
+5.2 Why It Exists
+
+Vite was created to address the slow startup and hot module replacement (HMR) of traditional bundlers like webpack. By leveraging native ES modules, Vite serves files on demand, dramatically improving dev server speed.
+
+5.3 Purpose
+
+· Fast development server
+· Instant hot module replacement (HMR)
+· Optimized production builds
+· Modern tooling (TypeScript, JSX, CSS preprocessors out of the box)
+
+5.4 Creating a Vite React App
+
+```bash
+npm create vite@latest my-react-app -- --template react
+cd my-react-app
+npm install
+npm run dev
+```
+
+Or using yarn/pnpm:
+
+```bash
+yarn create vite my-react-app --template react
+pnpm create vite my-react-app --template react
+```
+
+5.5 Project Structure (Vite React)
+
+```
+my-react-app/
+├── node_modules/
+├── public/
+│   └── vite.svg
+├── src/
+│   ├── assets/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .gitignore
+├── index.html
+├── package.json
+├── package-lock.json
+└── vite.config.js
+```
+
+Key differences from CRA:
+
+· index.html is at the root, not inside public/
+· Entry point is src/main.jsx
+· vite.config.js allows customization
+
+5.6 Configuration (vite.config.js)
+
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+  },
+})
+```
+
+5.7 Advantages
+
+· Extremely fast dev server
+· Lower memory footprint
+· Native ES modules support
+· Simple configuration
+· Supports React Fast Refresh
+
+5.8 Disadvantages
+
+· Ecosystem is newer (though now mature)
+· Some webpack-specific plugins not available
+· Production build uses Rollup, may need additional config for advanced cases
+
+5.9 Comparison: Vite vs CRA (expanded)
+
+Feature Vite CRA
+Startup time Instant Slow
+HMR speed Fast Slower
+Config file vite.config.js Hidden (or eject)
+Production bundler Rollup Webpack
+React support Official plugin Built-in
+Learning curve Low Very low
+Community Growing rapidly Mature but deprecated
+
+5.10 Best Practices
+
+· Use Vite for new React projects (recommended)
+· Keep vite.config.js minimal; add plugins as needed
+· Use environment variables with import.meta.env (different from CRA)
+· For production, npm run build produces optimized static files in dist/
+
+5.11 Interview Questions
+
+Q: What is Vite and why is it faster than webpack?
+Answer: Vite is a modern build tool that uses native ES modules during development, serving source files on demand instead of bundling everything upfront. This eliminates the initial bundling step, resulting in near-instant startup and fast HMR. For production, it uses Rollup to bundle.
+
+Q: How do you create a React app with Vite?
+Answer: Use npm create vite@latest my-app -- --template react, then npm install and npm run dev.
+
+---
+
+6. Project Structure
+
+6.1 Definition
+
+A well-organized project structure is crucial for maintainability and scalability. While CRA and Vite provide default structures, larger applications benefit from additional organization.
+
+6.2 Common React Project Structure (Feature-Based)
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Button/
+│   │   ├── Button.jsx
+│   │   └── Button.css
+│   └── ...
+├── features/            # Feature-specific components and logic
+│   ├── auth/
+│   │   ├── Login.jsx
+│   │   └── authSlice.js
+│   └── dashboard/
+├── hooks/               # Custom hooks
+├── services/            # API calls, business logic
+├── store/               # State management (Redux, Context)
+├── utils/               # Helper functions
+├── assets/              # Images, fonts, static files
+├── App.jsx
+└── main.jsx
+```
+
+6.3 Why It Exists
+
+A clear structure helps teams navigate code, reduces duplication, and makes it easier to add new features without breaking existing ones.
+
+6.4 Key Considerations
+
+· Component Reusability: Keep reusable components separate from feature-specific ones.
+· Layers: Separate UI, business logic, and data fetching.
+· Scalability: Structure should accommodate growth.
+
+6.5 Best Practices
+
+· Start simple; don't over-engineer
+· Use consistent naming (PascalCase for components, camelCase for files)
+· Group by feature, not by file type, for larger apps
+· Avoid deeply nested folders
+
+6.6 Example: Simple Vite React Project Layout
+
+```
+src/
+├── components/
+│   ├── Header.jsx
+│   └── Footer.jsx
+├── pages/
+│   ├── Home.jsx
+│   └── About.jsx
+├── App.jsx
+└── main.jsx
+```
+
+6.7 Interview Questions
+
+Q: How do you structure a large React application?
+Answer: I prefer a feature-based structure where related components, hooks, and state logic are grouped together. I also separate reusable components into a components folder and keep services/API calls in a separate services folder to maintain a clear separation of concerns.
+
+---
+
+7. package.json
+
+7.1 Definition
+
+package.json is a JSON file that contains metadata about the project and manages its dependencies, scripts, and configuration. It is the heart of any Node.js/npm project.
+
+7.2 Why It Exists
+
+It serves as a manifest for the project, allowing npm to install dependencies, run scripts, and provide information about the project.
+
+7.3 Structure
+
+```json
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "description": "A React application",
+  "main": "src/main.jsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^5.0.0"
+  }
+}
+```
+
+7.4 Key Fields
+
+· name: Project name (lowercase, no spaces)
+· version: Current version (SemVer)
+· scripts: Custom commands executed via npm run <script>
+· dependencies: Packages required in production
+· devDependencies: Packages required only for development
+· peerDependencies: Dependencies expected to be provided by the host environment
+· engines: Specify required Node/npm versions
+
+7.5 Scripts
+
+Scripts are used to automate tasks:
+
+```json
+"scripts": {
+  "start": "vite",
+  "build": "vite build",
+  "test": "vitest",
+  "lint": "eslint ."
+}
+```
+
+Run with:
+
+```bash
+npm run build
+```
+
+7.6 Best Practices
+
+· Keep package name and version accurate
+· Use npm install <pkg> to automatically update package.json
+· Use npm pkg set to modify fields programmatically
+· Document custom scripts in README
+
+7.7 Interview Questions
+
+Q: What is package.json?
+Answer: package.json is a manifest file that contains project metadata, scripts, and dependency information. It enables npm to install dependencies and run scripts.
+
+Q: What are dependencies vs devDependencies?
+Answer: dependencies are packages required at runtime, while devDependencies are only needed during development, such as build tools and test frameworks.
+
+---
+
+8. package-lock.json
+
+8.1 Definition
+
+package-lock.json is an auto-generated file that locks the exact version of every dependency and sub-dependency in the project. It ensures reproducible installs across different environments.
+
+8.2 Why It Exists
+
+Without a lock file, npm would resolve dependency versions based on semver ranges (e.g., ^1.2.0), which could lead to different versions being installed at different times, causing bugs. package-lock.json records the exact resolved versions, ensuring consistency.
+
+8.3 How It Works
+
+When you run npm install, npm:
+
+1. Reads package.json
+2. Determines the dependency tree
+3. Records the exact resolved versions in package-lock.json
+4. Subsequent npm install uses the lock file to install identical versions
+
+8.4 Important Rules
+
+· Commit package-lock.json to version control (for applications)
+· Do not manually edit it
+· Use npm ci in CI/CD to install exactly from the lock file (faster and deterministic)
+· npm install may update the lock file if package.json changes
+
+8.5 Difference Between package.json and package-lock.json
+
+Aspect package.json package-lock.json
+Purpose Metadata, scripts, dependency ranges Exact dependency tree
+Editable Yes, manually No, generated
+Committed Yes Yes (applications)
+Version info Ranges (^1.0.0) Exact (1.2.3)
+
+8.6 Interview Questions
+
+Q: What is package-lock.json?
+Answer: It is a lock file generated by npm that records the exact version of every installed dependency and its dependencies, ensuring consistent installs across environments.
+
+Q: Why should you commit package-lock.json?
+Answer: Committing it ensures all team members and CI/CD pipelines use identical dependency versions, preventing unexpected bugs caused by version drift.
+
+---
+
+9. Environment Variables
+
+9.1 Definition
+
+Environment variables are dynamic values that affect the behavior of running processes. In React applications, they are used to store configuration settings such as API endpoints, keys, and feature flags without hardcoding them in source code.
+
+9.2 Why It Exists
+
+Separating configuration from code allows the same codebase to run in different environments (development, staging, production) with different settings. It also improves security by keeping secrets out of source code.
+
+9.3 How to Use Environment Variables in React
+
+· Create React App: Variables must be prefixed with REACT_APP_ and placed in .env files.
+· Vite: Variables must be prefixed with VITE_ and accessed via import.meta.env.
+
+9.4 .env Files
+
+A .env file contains key-value pairs:
+
+```
+REACT_APP_API_URL=https://api.example.com
+```
+
+For Vite:
+
+```
+VITE_API_URL=https://api.example.com
+```
+
+9.5 Different .env Files
+
+· .env – Default
+· .env.local – Local overrides (not committed)
+· .env.development – Development-specific
+· .env.production – Production-specific
+· .env.test – Test-specific
+
+Priority: .env.local > specific env > .env
+
+9.6 Accessing Environment Variables
+
+CRA:
+
+```javascript
+const apiUrl = process.env.REACT_APP_API_URL;
+```
+
+Vite:
+
+```javascript
+const apiUrl = import.meta.env.VITE_API_URL;
+```
+
+9.7 Important Rules
+
+· Do not commit .env files (add to .gitignore)
+· Add .env.example to document required variables
+· Restart dev server after changing .env
+· Never store secrets in frontend code (anything in React is exposed to the browser)
+
+9.8 Common Mistakes
+
+· Forgetting to prefix variables correctly (REACT_APP_ or VITE_)
+· Committing sensitive .env files to version control
+· Not restarting server after changing env variables
+
+9.9 Best Practices
+
+· Use .env.local for local overrides
+· Keep environment variable names consistent across environments
+· Use a library like dotenv in Node.js (built-in in Vite and CRA)
+· For security, never put API keys that must remain secret in frontend environment variables
+
+9.10 Interview Questions
+
+Q: How do you use environment variables in React?
+Answer: In Create React App, variables must start with REACT_APP_ and are accessed via process.env.REACT_APP_*. In Vite, variables start with VITE_ and are accessed via import.meta.env.VITE_*.
+
+Q: Why should .env files not be committed?
+Answer: They often contain sensitive information like API keys, database URLs, or tokens. Committing them exposes secrets to anyone with repository access.
+
+---
+
+10. Real-World Scenario
+
+Problem: A React application needs to consume an API whose URL changes depending on the environment (development uses localhost, production uses a cloud URL). The same code should run in both without modifications.
+
+Solution: Use environment variables.
+
+· Create .env.development:
+  ```
+  VITE_API_URL=http://localhost:3000/api
+  ```
+· Create .env.production:
+  ```
+  VITE_API_URL=https://api.myapp.com
+  ```
+· In code:
+  ```javascript
+  const apiUrl = import.meta.env.VITE_API_URL;
+  fetch(apiUrl);
+  ```
+
+When building for production (npm run build), Vite automatically loads .env.production and sets the correct URL.
+
+---
+
+11. Module 01 – Quick Revision
+
+· npm is the package manager for JavaScript.
+· Create React App is deprecated; use Vite for new React projects.
+· package.json defines dependencies and scripts; package-lock.json locks exact versions.
+· Use npm install to add dependencies; npm ci for CI.
+· Environment variables are stored in .env files; prefixes differ (REACT_APP_ vs VITE_).
+· Never commit .env files with secrets.
+
+---
+
+12. Interview Questions – Module 01
+
+Beginner
+
+1. What is npm?
+      npm is the Node Package Manager used to install and manage JavaScript packages.
+2. What is the purpose of package.json?
+      It contains project metadata, dependencies, and scripts.
+3. How do you create a React app?
+      Using Vite: npm create vite@latest my-app -- --template react, then cd my-app && npm install && npm run dev.
+
+Intermediate
+
+1. Explain the difference between dependencies and devDependencies.
+      Dependencies are needed at runtime; devDependencies are only needed during development (e.g., build tools, test frameworks).
+2. What is the role of package-lock.json?
+      It locks exact versions of all dependencies, ensuring reproducible installs across environments.
+3. How do environment variables work in Vite?
+      Variables must be prefixed with VITE_ and are accessed via import.meta.env.VITE_*. They are defined in .env files.
+
+Advanced
+
+1. Why is Vite faster than webpack in development?
+      Vite serves native ES modules directly, avoiding the need to bundle the entire application before serving. It uses esbuild for pre-bundling dependencies, which is extremely fast. HMR is instantaneous because only the changed module is invalidated.
+2. What are the security concerns with environment variables in React?
+      All environment variables prefixed with VITE_ or REACT_APP_ are embedded in the client-side bundle and visible to anyone. Therefore, they must never contain secrets like API keys or passwords; only public configuration should be stored there.
+3. Explain the difference between npm install and npm ci.
+      npm install reads package.json and may update package-lock.json if needed. It is used for local development. npm ci installs exactly from package-lock.json, deleting node_modules first, ensuring a clean, deterministic install. It is preferred in CI/CD.
+
+Scenario-Based
+
+Q: You are setting up a new React project for a team. Which tool would you choose and why?
+Answer: I would choose Vite because it is fast, modern, and officially recommended for new React projects. It provides a better developer experience with instant HMR and simpler configuration. I would also set up a consistent project structure, use environment variables for configuration, and commit both package.json and package-lock.json to ensure consistent installs.
+
+---
+
+13. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Using CRA for new projects Use Vite or Next.js
+Committing .env with secrets Add .env to .gitignore, use .env.example
+Not committing package-lock.json Always commit it for applications
+Installing packages without flags Use --save-dev for dev tools
+Using global packages for project dependencies Keep project deps local
+
+---
+
+This concludes Module 01: React Setup. The next module is Module 02: React Fundamentals, covering JSX, Components, Props, State, and more.
+
+
+
+
