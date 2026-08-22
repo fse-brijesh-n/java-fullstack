@@ -19228,3 +19228,6846 @@ function ProtectedRoute() {
 This concludes Module 21: Projects and the core curriculum. The next section will provide a Full-Stack Add-On: Express & MongoDB to complement the full-stack aspects, followed by a consolidated Final Cheat Sheet and Final Interview Revision.
 
 
+Module 22: Node.js
+
+Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. It allows developers to run JavaScript on the server side, enabling the development of scalable network applications. This module covers the fundamentals of Node.js, its architecture, core modules, event loop, and how it integrates with backend development. Understanding Node.js is essential for building full-stack applications with Express and databases like MongoDB/PostgreSQL.
+
+---
+
+1. Definition
+
+1.1 What is Node.js?
+
+Node.js is an open-source, cross-platform JavaScript runtime environment that executes JavaScript code outside a web browser. It uses an event-driven, non-blocking I/O model, making it lightweight and efficient for building scalable network applications, especially APIs and real-time services.
+
+1.2 What Problem It Solves
+
+Before Node.js, JavaScript was primarily a client-side language. Node.js enables developers to use JavaScript for server-side programming, unifying the language across the full stack. It solves the problem of handling many concurrent connections efficiently by using asynchronous, non-blocking I/O, which is ideal for I/O-heavy applications.
+
+1.3 Why It Was Introduced
+
+Node.js was created in 2009 by Ryan Dahl to build web servers that could handle many simultaneous connections with minimal overhead. Traditional server models (thread-per-connection) were inefficient for I/O-bound tasks. Node.js introduced an event loop and non-blocking I/O, allowing a single thread to handle many connections.
+
+1.4 Where It Is Used
+
+· REST APIs and microservices
+· Real-time applications (chat, gaming)
+· Command-line tools
+· Backend for single-page applications (SPA)
+· Serverless functions
+· Data streaming
+
+1.5 When It Should Be Used
+
+· When building I/O-intensive applications.
+· When you want a single language for frontend and backend.
+· When you need high concurrency with low resource usage.
+· For prototyping and building fast, scalable APIs.
+
+1.6 When It Should Not Be Used
+
+· CPU-intensive tasks (heavy computation, video encoding) – better with languages like Go or Rust, or use worker threads.
+· When you need strong multi-threaded processing (Node.js is single-threaded for user code, though worker threads exist).
+· When the ecosystem's asynchronous nature might be confusing for teams not familiar with it.
+
+1.7 Relationship with Surrounding Concepts
+
+· NPM: Node Package Manager, used to install libraries.
+· Express: Web framework built on top of Node.js.
+· MongoDB/PostgreSQL: Databases commonly used with Node.js.
+· JavaScript: Node.js executes JavaScript, sharing syntax and features (ES6+).
+
+---
+
+2. Why Node.js Exists
+
+2.1 The Problem Before Node.js
+
+Before Node.js, building server-side applications required learning a different language (e.g., PHP, Python, Ruby) than the frontend. This created a language barrier and made full-stack development more complex. Additionally, traditional server models struggled with many concurrent connections due to blocking I/O and thread overhead.
+
+2.2 The Solution Node.js Provides
+
+Node.js uses an event-driven, non-blocking I/O model, which allows handling thousands of concurrent connections with a single process. It also brings JavaScript to the server, enabling full-stack JavaScript development, code reuse, and a vast npm ecosystem.
+
+2.3 What Happens If We Don't Use It?
+
+Without Node.js, you would need to use another backend technology. While that is perfectly valid, you would miss the benefits of:
+
+· Shared language and tooling.
+· High performance for I/O-heavy workloads.
+· Rich ecosystem of JavaScript libraries.
+· Rapid development and prototyping.
+
+2.4 Alternatives
+
+· Python (Django, Flask)
+· Ruby (Rails)
+· Go
+· PHP (Laravel)
+· Java (Spring Boot)
+· C# (.NET)
+
+2.5 Why Choose Node.js?
+
+· Performance: Non-blocking I/O handles many requests efficiently.
+· Developer productivity: One language for frontend and backend.
+· Ecosystem: npm provides a huge library of packages.
+· Community: Large and active.
+· Scalability: Easy to scale horizontally.
+
+---
+
+3. Core Concepts
+
+3.1 Event Loop
+
+The event loop is the heart of Node.js. It allows Node.js to perform non-blocking I/O operations despite JavaScript being single-threaded. The event loop continuously checks the call stack and the callback queue. When the call stack is empty, it picks callbacks from the queue and executes them.
+
+Phases of the event loop:
+
+1. Timers: executes callbacks scheduled by setTimeout() and setInterval().
+2. Pending callbacks: executes I/O callbacks deferred to the next loop iteration.
+3. Idle, prepare: internal.
+4. Poll: retrieve new I/O events; execute I/O-related callbacks.
+5. Check: setImmediate() callbacks.
+6. Close callbacks: socket.on('close', ...).
+
+3.2 Non-Blocking I/O
+
+Node.js uses asynchronous operations. For example, reading a file does not block the execution of other code. Instead, a callback is invoked when the operation completes. This is achieved through libuv, a multi-platform support library.
+
+3.3 Modules
+
+Node.js has a module system based on CommonJS. Modules encapsulate code and allow exporting/importing functionality.
+
+· Core modules: built-in (e.g., fs, http, path, os).
+· Local modules: files in the project.
+· Third-party modules: installed via npm.
+
+3.4 Package.json
+
+Defines project metadata, dependencies, and scripts. Already covered earlier, but essential in Node.js.
+
+3.5 Asynchronous Patterns
+
+· Callbacks: traditional but prone to "callback hell".
+· Promises: modern, chainable.
+· Async/await: syntactic sugar over promises, making asynchronous code look synchronous.
+
+---
+
+4. Prerequisites
+
+Before learning Node.js, you should understand:
+
+· JavaScript fundamentals (variables, functions, ES6+)
+· Basic command-line usage
+· HTML/CSS (for full-stack context)
+· Basic understanding of HTTP and web servers
+
+---
+
+5. Internal Working
+
+5.1 Architecture Overview
+
+```mermaid
+flowchart LR
+    JS[JavaScript Code] --> V8[V8 Engine]
+    V8 --> libuv[libuv Library]
+    libuv --> ThreadPool[Thread Pool]
+    libuv --> EventLoop[Event Loop]
+    EventLoop --> Callbacks[Callback Queue]
+    Callbacks --> V8
+```
+
+· V8: compiles and executes JavaScript.
+· libuv: handles asynchronous I/O, event loop, thread pool.
+· Event loop: orchestrates callbacks.
+· Thread pool: for some operations (file system, DNS) that are not inherently async.
+
+5.2 Request Flow in a Node.js HTTP Server
+
+```mermaid
+sequenceDiagram
+    Client->>Server: HTTP Request
+    Server->>EventLoop: Request queued
+    EventLoop->>Handler: Execute handler
+    Handler->>Database: Async query
+    Database-->>Handler: Result (callback)
+    Handler->>Client: Response
+```
+
+Node.js handles requests without spawning a new thread per request. Instead, it uses callbacks and the event loop to manage concurrency.
+
+5.3 Memory and Threading
+
+· Node.js runs JavaScript in a single thread, but I/O operations are offloaded to libuv's thread pool or the OS.
+· User code should avoid blocking the event loop (e.g., heavy loops) because it prevents processing other requests.
+
+---
+
+6. Syntax and Structure
+
+6.1 Basic HTTP Server
+
+```javascript
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Hello, World!\n');
+});
+
+server.listen(3000, () => {
+  console.log('Server running at http://localhost:3000/');
+});
+```
+
+6.2 Using ES Modules
+
+Node.js supports ES modules (import/export) with .mjs extension or by setting "type": "module" in package.json.
+
+```javascript
+// ES module syntax
+import http from 'http';
+```
+
+6.3 CommonJS vs ES Modules
+
+· CommonJS: require(), module.exports.
+· ES Modules: import, export.
+
+Modern projects often use ES modules, but CommonJS is still widely used in existing codebases.
+
+6.4 File System Module
+
+```javascript
+const fs = require('fs');
+
+// Asynchronous read
+fs.readFile('example.txt', 'utf8', (err, data) => {
+  if (err) throw err;
+  console.log(data);
+});
+
+// Synchronous read (blocking)
+const data = fs.readFileSync('example.txt', 'utf8');
+
+// Promises version
+const fsPromises = require('fs').promises;
+const data = await fsPromises.readFile('example.txt', 'utf8');
+```
+
+6.5 Path Module
+
+```javascript
+const path = require('path');
+
+const fullPath = path.join(__dirname, 'folder', 'file.txt');
+console.log(fullPath);
+```
+
+6.6 Environment Variables
+
+```javascript
+const port = process.env.PORT || 3000;
+```
+
+Use .env files with dotenv package.
+
+---
+
+7. Basic Example
+
+7.1 Hello World HTTP Server
+
+```javascript
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello World');
+});
+
+server.listen(3000, '127.0.0.1', () => {
+  console.log('Server running at http://127.0.0.1:3000/');
+});
+```
+
+7.2 Using Express (simplified)
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+---
+
+8. Practical Example
+
+8.1 Building a Simple REST API with Node.js (no framework)
+
+```javascript
+const http = require('http');
+const url = require('url');
+
+const data = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+];
+
+const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+  const method = req.method;
+
+  if (method === 'GET' && parsedUrl.pathname === '/users') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
+  } else if (method === 'GET' && parsedUrl.pathname.startsWith('/users/')) {
+    const id = parseInt(parsedUrl.pathname.split('/')[2]);
+    const user = data.find(u => u.id === id);
+    if (user) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(user));
+    } else {
+      res.writeHead(404);
+      res.end('User not found');
+    }
+  } else {
+    res.writeHead(404);
+    res.end('Not found');
+  }
+});
+
+server.listen(3000, () => console.log('API running'));
+```
+
+8.2 File-based CRUD with FS
+
+Using fs/promises to read/write JSON file as a simple database.
+
+---
+
+9. Advanced Example
+
+9.1 Using Streams for Large Files
+
+```javascript
+const fs = require('fs');
+const http = require('http');
+
+http.createServer((req, res) => {
+  const stream = fs.createReadStream('large-file.txt');
+  stream.pipe(res);
+}).listen(3000);
+```
+
+Streams allow handling large files without loading them entirely into memory.
+
+9.2 Cluster Module for Multi-Core
+
+```javascript
+const cluster = require('cluster');
+const http = require('http');
+const numCPUs = require('os').cpus().length;
+
+if (cluster.isMaster) {
+  console.log(`Master ${process.pid} is running`);
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+  cluster.on('exit', (worker) => {
+    console.log(`Worker ${worker.process.pid} died`);
+  });
+} else {
+  http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('Hello from worker ' + process.pid);
+  }).listen(8000);
+  console.log(`Worker ${process.pid} started`);
+}
+```
+
+This uses multiple processes to utilize multiple CPU cores.
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Building a Backend for a React SPA
+
+A React frontend needs a backend API to handle user authentication, data persistence, and real-time updates. Node.js with Express and MongoDB provides a scalable solution.
+
+10.2 Solution
+
+· Use Node.js as the runtime.
+· Use Express for routing and middleware.
+· Use MongoDB (via Mongoose) for data storage.
+· Implement JWT authentication.
+· Deploy backend to a cloud platform.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    React[React Frontend] --> API[Express API]
+    API --> Auth[Authentication Middleware]
+    API --> DB[(MongoDB)]
+    API --> Realtime[WebSocket]
+```
+
+10.4 Implementation Highlights
+
+· REST endpoints for users, products.
+· JWT authentication with access/refresh tokens.
+· MongoDB schemas and models.
+· Error handling middleware.
+· Environment variables for configuration.
+
+---
+
+11. Common Mistakes
+
+1. Blocking the event loop with heavy synchronous operations (e.g., large JSON parsing, long loops).
+2. Callback hell due to deeply nested callbacks; use Promises/async-await.
+3. Not handling errors in callbacks or promises.
+4. Ignoring environment variables for production configuration.
+5. Using fs.readFileSync in request handlers, which blocks.
+6. Memory leaks due to unclosed connections or timers.
+7. Not using package-lock.json with npm install (use npm ci in production).
+8. Exposing sensitive data in logs or API responses.
+
+---
+
+12. Best Practices
+
+· Use asynchronous non-blocking I/O.
+· Use async/await for readability.
+· Centralize error handling.
+· Use environment variables and a config module.
+· Use a process manager like PM2 in production.
+· Implement logging and monitoring.
+· Write unit and integration tests.
+· Use npm ci in CI/CD.
+· Keep modules small and focused.
+· Use dotenv for environment variables, but never commit .env.
+
+---
+
+13. Security
+
+· Validate and sanitize all user inputs.
+· Use helmet to set secure HTTP headers.
+· Use cors carefully; restrict origins.
+· Hash passwords with bcrypt.
+· Use JWT with short expiry and refresh tokens.
+· Prevent SQL/NoSQL injection (use ORM/ODM with parameterized queries).
+· Implement rate limiting (express-rate-limit).
+· Use HTTPS.
+· Keep dependencies updated; run npm audit.
+
+---
+
+14. Performance and Scalability
+
+· Use the cluster module to utilize multi-core CPUs.
+· Use caching (Redis) for frequently accessed data.
+· Use compression middleware.
+· Use connection pooling for databases.
+· Load balance across multiple instances.
+· Use CDN for static assets (if serving frontend).
+· Avoid blocking I/O.
+· Profile and monitor with tools like clinic, pm2 monit.
+
+---
+
+15. Testing
+
+· Use jest or mocha with chai for unit testing.
+· Use supertest for testing HTTP endpoints.
+· Mock external services.
+· Test asynchronous code with async/await.
+· Write integration tests with a test database.
+
+Example using Jest + Supertest:
+
+```javascript
+const request = require('supertest');
+const app = require('../app');
+
+describe('GET /users', () => {
+  it('responds with json', async () => {
+    const res = await request(app).get('/users');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(2);
+  });
+});
+```
+
+---
+
+16. Comparison: Node.js vs Other Backend Technologies
+
+Feature Node.js Python (Django) Go Java (Spring)
+Language JavaScript Python Go Java
+Model Single-threaded event loop Multi-threaded Concurrency via goroutines Multi-threaded
+Performance High for I/O Moderate High for CPU/IO High
+Learning Curve Low (if JS known) Low Moderate High
+Ecosystem npm (huge) PyPI Go modules Maven
+Use Case APIs, real-time Web apps, data Microservices, high performance Enterprise
+
+---
+
+17. Quick Revision
+
+· Node.js is a JavaScript runtime for server-side development.
+· Non-blocking, event-driven I/O.
+· Event loop handles concurrency.
+· Core modules: fs, http, path, os, etc.
+· Use require() (CommonJS) or import (ES modules).
+· Use Promises and async/await.
+· Deploy with PM2, cluster.
+· Security: helmet, cors, bcrypt, JWT.
+· Test with Jest/Supertest.
+
+---
+
+18. Interview Questions – Module 22
+
+Beginner
+
+1. What is Node.js?
+      Node.js is a JavaScript runtime built on Chrome's V8 engine that allows running JavaScript on the server side, using an event-driven, non-blocking I/O model.
+2. What is the event loop?
+      The event loop is the mechanism that allows Node.js to perform non-blocking I/O operations by offloading operations to the system kernel whenever possible and then picking up callbacks when the operation completes.
+3. What is npm?
+      npm is the Node Package Manager, used to install and manage JavaScript packages.
+
+Intermediate
+
+1. Explain the difference between blocking and non-blocking I/O.
+      Blocking I/O stops the execution of further code until the operation completes. Non-blocking I/O allows other code to execute while the operation is in progress, with a callback handling the result.
+2. How does Node.js handle concurrency if it's single-threaded?
+      Node.js uses an event loop and asynchronous I/O. User code runs on a single thread, but I/O operations are delegated to the system or a thread pool, and callbacks are executed when the event loop is free.
+3. What are the core modules in Node.js?
+      fs, http, path, os, events, util, crypto, etc.
+
+Advanced
+
+1. How would you scale a Node.js application to multiple cores?
+      Use the cluster module to fork worker processes, one per CPU core, sharing the same port. Alternatively, run multiple instances behind a load balancer.
+2. What are streams in Node.js and why are they useful?
+      Streams are objects that allow reading/writing data in chunks, reducing memory usage and enabling processing of large data sets. They can be used for file operations, HTTP, etc.
+3. How do you avoid callback hell?
+      Use Promises and async/await, modularize code, and use named functions.
+
+Scenario-Based
+
+Q: Your Node.js server is experiencing high CPU usage. How would you diagnose and fix it?
+Answer: I would use profiling tools (Node.js built-in profiler, clinic, pm2) to identify blocking operations. Then I would move CPU-intensive tasks to worker threads or separate services, optimize algorithms, and use caching. I'd also ensure the event loop is not blocked.
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Blocking event loop Use async operations; offload CPU tasks
+Callback hell Use async/await
+Not handling errors Use try/catch and centralized error handling
+Ignoring security Use helmet, validation, JWT, bcrypt
+Not using environment variables Centralize config
+Not using npm ci in CI Use npm ci for deterministic builds
+Not logging Use a logging library (winston, morgan)
+Not monitoring Use APM tools
+
+---
+
+This concludes Module 22: Node.js. The next module will be Module 23: Express.js, covering the Express framework in depth.
+
+
+Module 23: Express.js
+
+Express.js is a minimal, flexible, and widely adopted web application framework for Node.js. It provides a robust set of features for building web and mobile applications, including routing, middleware, and template engines. Express simplifies server-side development by abstracting the repetitive parts of creating HTTP servers and handling requests/responses. This module covers Express in depth, from basic routing to advanced middleware, error handling, and integration with databases.
+
+---
+
+1. Definition
+
+1.1 What is Express.js?
+
+Express.js is a fast, unopinionated, minimalist web framework for Node.js. It provides a thin layer of fundamental web application features, allowing developers to build single-page, multi-page, and hybrid web applications as well as robust APIs. It is built on top of Node.js's http module and enhances it with a powerful routing system, middleware support, and template engine integration.
+
+1.2 What Problem It Solves
+
+Node.js's built-in http module is low-level and requires manual handling of routing, URL parsing, and response management. Express abstracts these details, providing:
+
+· Simple and expressive route definitions.
+· Middleware for processing requests and responses.
+· Support for various HTTP methods.
+· Integration with template engines (Pug, EJS, etc.).
+· Centralized error handling.
+· Easier management of query parameters, body parsing, etc.
+
+1.3 Why It Was Introduced
+
+Express was created by TJ Holowaychuk in 2010 to provide a minimal, flexible framework for building web applications and APIs on Node.js. It became the de facto standard for Node.js web development due to its simplicity and extensibility.
+
+1.4 Where It Is Used
+
+· REST APIs and microservices
+· Full-stack applications (with React, Angular, Vue frontends)
+· Single-page application backends
+· Real-time applications (combined with Socket.io)
+· Server-side rendered applications (with template engines)
+
+1.5 When It Should Be Used
+
+· When building any HTTP server or API in Node.js.
+· When you need a lightweight, unopinionated framework that can be customized with middleware.
+· When you want a large ecosystem of middleware and community support.
+
+1.6 When It Should Not Be Used
+
+· If you need a highly opinionated framework with built-in ORM, authentication, etc., consider NestJS or AdonisJS.
+· For very simple static file serving, a simpler solution might suffice, though Express can do that too.
+· If you prefer a different paradigm, like Koa (by the same team) or Fastify (faster, lower overhead).
+
+1.7 Relationship with Surrounding Concepts
+
+· Node.js: Express runs on Node.js and uses its http module.
+· Middleware: Functions that have access to request and response objects.
+· MongoDB/PostgreSQL: Common databases used with Express via ODMs/ORMs.
+· React/Angular/Vue: Frontend frameworks that consume Express APIs.
+
+---
+
+2. Why Express.js Exists
+
+2.1 The Problem Before Express
+
+Before Express, developers had to use Node.js's raw http module to handle every request, parse URLs, manage different HTTP methods, and manually set response headers. This was repetitive, error-prone, and lacked structure. Middleware concepts were not built-in, making it difficult to add logging, authentication, or body parsing in a reusable way.
+
+2.2 The Solution Express Provides
+
+Express introduces a simple routing system and middleware stack, making server-side development faster and more organized. It allows developers to:
+
+· Define routes based on HTTP method and URL pattern.
+· Chain multiple middleware functions.
+· Parse request bodies automatically (with express.json()).
+· Serve static files.
+· Use template engines.
+· Centralize error handling.
+
+This reduces boilerplate and enforces good patterns, enabling rapid development and maintainability.
+
+2.3 What Happens If We Don't Use It?
+
+Without Express, you would need to implement your own routing, middleware, and helper functions, which is time-consuming and error-prone. While possible, it defeats the purpose of rapid development and reusability. Alternatives like Fastify or Koa offer similar benefits but with different trade-offs.
+
+2.4 Alternatives
+
+· Fastify: Faster, lower overhead, schema-based validation.
+· Koa: Created by Express team, uses async/await natively, more minimal.
+· NestJS: Opinionated, built with TypeScript, inspired by Angular.
+· Hapi: Configuration-centric, plugin-based.
+
+2.5 Why Choose Express?
+
+· Massive community and ecosystem.
+· Well-documented, stable, and battle-tested.
+· Flexible and unopinionated.
+· Easy to learn for Node.js developers.
+· Huge number of middleware and extensions.
+
+---
+
+3. Core Concepts
+
+3.1 Routing
+
+Routing defines how an application responds to client requests to a particular endpoint (URI) and HTTP method (GET, POST, etc.). In Express, routes can be defined at the application level or using express.Router().
+
+3.2 Middleware
+
+Middleware functions are functions that have access to the request object (req), the response object (res), and the next middleware function in the application's request-response cycle. They can execute code, modify request/response objects, end the request, or call next().
+
+3.3 Request and Response Objects
+
+· req: contains information about the HTTP request (params, query, body, headers).
+· res: methods to send response (send, json, status, redirect, etc.).
+
+3.4 Template Engines
+
+Express supports various template engines like Pug, EJS, Handlebars, enabling server-side rendering of dynamic HTML.
+
+3.5 Error Handling
+
+Express has a default error handler. You can define custom error-handling middleware with four arguments (err, req, res, next).
+
+3.6 Static Files
+
+Use express.static to serve static files (images, CSS, JS).
+
+3.7 Body Parsing
+
+Use express.json() and express.urlencoded() middleware to parse request bodies.
+
+---
+
+4. Prerequisites
+
+· Node.js and npm installed.
+· Understanding of JavaScript (ES6+).
+· Basic knowledge of HTTP methods and status codes.
+· Command-line basics.
+
+---
+
+5. Internal Working
+
+5.1 How Express Works Under the Hood
+
+Express is built on top of Node.js's http module. When you call app.listen(port), it creates an HTTP server. Incoming requests are processed through a stack of middleware functions and route handlers. Each middleware/handler can either end the response or pass control to the next.
+
+```mermaid
+sequenceDiagram
+    Client->>Server: HTTP Request
+    Server->>Middleware1: Process request
+    Middleware1->>Middleware2: next()
+    Middleware2->>RouteHandler: match route
+    RouteHandler->>Response: send response
+    Response-->>Client: HTTP Response
+```
+
+5.2 Middleware Execution Flow
+
+Middleware functions are executed in the order they are added. If a middleware doesn't call next(), the request stops there. Route handlers are also middleware, but they typically end the response.
+
+5.3 Routing Matching
+
+Express matches routes based on the request method and URL path. It supports route parameters (:id), query strings, and wildcards. The first matching route handler is executed; if it calls next(), the next matching handler can run.
+
+5.4 Error Handling Flow
+
+When an error is thrown or passed to next(err), Express skips regular middleware and goes to the nearest error-handling middleware (with four parameters). If no error handler exists, Express uses the default error handler.
+
+---
+
+6. Syntax and Structure
+
+6.1 Basic Express Application
+
+```javascript
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
+```
+
+6.2 Routing Methods
+
+· app.get(path, callback)
+· app.post(path, callback)
+· app.put(path, callback)
+· app.delete(path, callback)
+· app.patch(path, callback)
+· app.all(path, callback) (all methods)
+· app.use([path,] callback) (middleware)
+
+6.3 Route Parameters
+
+```javascript
+app.get('/users/:userId/books/:bookId', (req, res) => {
+  res.send(req.params);
+});
+```
+
+6.4 Query Parameters
+
+```javascript
+app.get('/search', (req, res) => {
+  res.send(req.query.q);
+});
+```
+
+6.5 Request Body Parsing
+
+```javascript
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+```
+
+6.6 Response Methods
+
+· res.send() – send various types.
+· res.json() – send JSON.
+· res.status(code) – set status.
+· res.redirect(url) – redirect.
+· res.render(view, data) – render a view.
+· res.sendFile(path) – send a file.
+
+6.7 Application Settings
+
+· app.set('view engine', 'ejs')
+· app.set('views', './views')
+
+---
+
+7. Basic Example
+
+7.1 Hello World
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+7.2 Handling Multiple Routes
+
+```javascript
+app.get('/', (req, res) => res.send('Home'));
+app.get('/about', (req, res) => res.send('About'));
+app.post('/submit', (req, res) => res.send('Submitted'));
+```
+
+---
+
+8. Practical Example
+
+8.1 Building a Simple REST API
+
+```javascript
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+let users = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+];
+
+// GET all users
+app.get('/api/users', (req, res) => {
+  res.json(users);
+});
+
+// GET single user
+app.get('/api/users/:id', (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id));
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json(user);
+});
+
+// POST create user
+app.post('/api/users', (req, res) => {
+  const newUser = { id: users.length + 1, ...req.body };
+  users.push(newUser);
+  res.status(201).json(newUser);
+});
+
+// PUT update user
+app.put('/api/users/:id', (req, res) => {
+  const user = users.find(u => u.id === parseInt(req.params.id));
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  Object.assign(user, req.body);
+  res.json(user);
+});
+
+// DELETE user
+app.delete('/api/users/:id', (req, res) => {
+  users = users.filter(u => u.id !== parseInt(req.params.id));
+  res.status(204).send();
+});
+
+app.listen(3000, () => console.log('API running'));
+```
+
+8.2 Serving Static Files
+
+```javascript
+app.use(express.static('public'));
+```
+
+Now files in public/ are accessible (e.g., http://localhost:3000/image.png).
+
+---
+
+9. Advanced Example
+
+9.1 Using Routers and Controllers (MVC)
+
+Create modular structure:
+
+```
+project/
+├── routes/
+│   ├── users.js
+│   └── index.js
+├── controllers/
+│   └── usersController.js
+├── models/
+│   └── User.js
+├── app.js
+└── server.js
+```
+
+routes/users.js:
+
+```javascript
+const express = require('express');
+const router = express.Router();
+const usersController = require('../controllers/usersController');
+
+router.get('/', usersController.getAllUsers);
+router.get('/:id', usersController.getUser);
+router.post('/', usersController.createUser);
+router.put('/:id', usersController.updateUser);
+router.delete('/:id', usersController.deleteUser);
+
+module.exports = router;
+```
+
+controllers/usersController.js:
+
+```javascript
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createUser = async (req, res, next) => {
+  try {
+    const newUser = await User.create(req.body);
+    res.status(201).json(newUser);
+  } catch (err) {
+    next(err);
+  }
+};
+// ...
+```
+
+app.js:
+
+```javascript
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+app.use('/users', require('./routes/users'));
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+module.exports = app;
+```
+
+server.js:
+
+```javascript
+const app = require('./app');
+app.listen(3000, () => console.log('Server started'));
+```
+
+This separation improves maintainability and testability.
+
+9.2 Error Handling Middleware
+
+```javascript
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  res.status(status).json({ message: err.message });
+});
+```
+
+9.3 Using Async Handlers with try-catch or wrapper
+
+To avoid repeating try-catch, use a wrapper:
+
+```javascript
+const asyncHandler = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
+
+// Usage
+exports.getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'Not found' });
+  res.json(user);
+});
+```
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Building a Backend for an E-Commerce Application
+
+The application needs:
+
+· Product listing with search/filter.
+· User authentication (JWT).
+· Shopping cart and orders.
+· Role-based access (admin can manage products).
+
+10.2 Solution
+
+· Use Express for API.
+· Use MongoDB/Mongoose for data.
+· Use bcrypt and jsonwebtoken for authentication.
+· Use cors and helmet for security.
+· Use express-rate-limit to prevent abuse.
+· Structure with routers, controllers, models, and middleware.
+· Use environment variables.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    Client[React Frontend] --> API[Express API]
+    API --> Middleware[Middleware Stack]
+    Middleware --> Auth[Auth Middleware]
+    Middleware --> Validation[Validation Middleware]
+    API --> Routes[Routes]
+    Routes --> Controllers[Controllers]
+    Controllers --> Models[Models]
+    Models --> DB[(MongoDB)]
+```
+
+10.4 Implementation Highlights
+
+· authMiddleware verifies JWT and attaches user to req.
+· roleMiddleware checks role for admin routes.
+· validate middleware using Joi or Zod.
+· Routes for /products, /auth, /cart, /orders.
+· Error handling middleware at the end.
+
+---
+
+11. Common Mistakes
+
+1. Not calling next() in middleware, causing requests to hang.
+2. Not parsing request body (express.json() missing) leading to req.body undefined.
+3. Blocking the event loop with synchronous operations.
+4. Not handling errors properly, leading to unhandled promise rejections.
+5. Exposing sensitive information in error responses.
+6. Not using return before res.send/res.json leading to multiple responses.
+7. Ignoring route order (e.g., placing a catch-all before specific routes).
+8. Not using express.Router() for modularity.
+9. Hardcoding URLs or secrets instead of environment variables.
+10. Not setting up CORS correctly, causing frontend issues.
+
+---
+
+12. Best Practices
+
+· Use express.Router() to organize routes.
+· Use controller functions, avoid inline complex logic.
+· Centralize error handling with middleware.
+· Use asyncHandler to catch errors in async routes.
+· Use environment variables and a config module.
+· Use helmet for security headers.
+· Use cors properly.
+· Use validation middleware (Joi, Zod).
+· Keep middleware small and composable.
+· Use npm ci in production.
+· Write tests with Jest/Supertest.
+· Use a process manager like PM2.
+· Set app.disable('x-powered-by') to hide framework info.
+
+---
+
+13. Security
+
+· Helmet: set secure HTTP headers (app.use(helmet())).
+· CORS: restrict origins (cors({ origin: 'https://example.com' })).
+· Rate limiting: express-rate-limit.
+· Input validation: validate all incoming data.
+· JWT security: short-lived tokens, refresh tokens, secure storage.
+· Password hashing: bcrypt.
+· Prevent NoSQL injection: use parameterized queries with Mongoose; sanitize input.
+· Prevent XSS: sanitize output; use template engine escaping.
+· Use HTTPS.
+· Hide stack traces in production.
+· Use csurf for CSRF protection if using cookies.
+· Regular dependency updates: npm audit.
+
+---
+
+14. Performance and Scalability
+
+· Use compression middleware.
+· Cache responses with Redis.
+· Use database connection pooling.
+· Use cluster to utilize multiple cores.
+· Use a reverse proxy (Nginx) for static files and load balancing.
+· Use streaming for large files.
+· Avoid synchronous operations.
+· Use async/await efficiently.
+· Profile with tools like clinic, 0x.
+· Consider using Fastify if performance is critical (Express is not the fastest).
+
+---
+
+15. Testing
+
+· Use jest + supertest for API testing.
+· Mock models/services.
+· Test routes, middleware, and error handling.
+· Use a test database.
+· Write integration tests.
+
+Example test:
+
+```javascript
+const request = require('supertest');
+const app = require('../app');
+
+describe('GET /api/users', () => {
+  it('returns array of users', async () => {
+    const res = await request(app).get('/api/users');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+});
+```
+
+---
+
+16. Comparison: Express vs Fastify vs Koa
+
+Feature Express Fastify Koa
+Performance Good Excellent Good
+Middleware Classic callback Similar Async/await
+Built-in features Rich Rich, schema validation Minimal
+Ecosystem Huge Growing Moderate
+Learning curve Low Moderate Moderate
+TypeScript support Via @types Excellent Via @types
+Recommended for General use, large community High performance, schema validation Modern async patterns
+
+---
+
+17. Quick Revision
+
+· Express is a minimal web framework for Node.js.
+· Core: routing, middleware, request/response.
+· Use express.json() for body parsing.
+· Use express.Router() for modular routes.
+· Middleware executes in order; call next() to continue.
+· Error-handling middleware with 4 args.
+· Serve static files with express.static.
+· Use controllers for logic.
+· Security: helmet, cors, rate limiting, validation.
+· Performance: compression, caching, cluster.
+· Test with Supertest.
+
+---
+
+18. Interview Questions – Module 23
+
+Beginner
+
+1. What is Express.js?
+      Express is a minimal and flexible Node.js web application framework that provides routing, middleware, and other features for building web apps and APIs.
+2. How do you create a basic Express server?
+   ```javascript
+   const express = require('express');
+   const app = express();
+   app.get('/', (req, res) => res.send('Hello'));
+   app.listen(3000, () => console.log('Server started'));
+   ```
+3. What is middleware in Express?
+      Middleware functions have access to req, res, and next. They can execute code, modify request/response, end the request, or call next().
+
+Intermediate
+
+1. Explain routing in Express.
+      Routing defines how an app responds to different HTTP methods and URLs. Routes can have parameters (:id) and query strings (?key=value). You can use express.Router() for modular routing.
+2. How do you handle errors in Express?
+      Define error-handling middleware with (err, req, res, next). It catches errors passed to next(err). Use try/catch or async wrapper to forward errors.
+3. What is express.json()?
+      It is built-in middleware that parses incoming requests with JSON payloads, making the data available in req.body.
+
+Advanced
+
+1. How would you implement authentication middleware in Express?
+      Create a middleware that verifies JWT from Authorization header, extracts user, and attaches to req.user. If invalid, return 401. Then use it on protected routes.
+2. How does Express handle asynchronous errors?
+      Express doesn't catch async errors automatically. You need to use try/catch and call next(err) or use an async wrapper. In Express 5 (not yet stable), async errors are forwarded automatically.
+3. What are the benefits of using express.Router()?
+      It allows creating modular, mountable route handlers. It keeps code organized and enables reusability. It can also have its own middleware.
+
+Scenario-Based
+
+Q: You need to add rate limiting to prevent abuse. How would you do it with Express?
+Answer: Use express-rate-limit middleware. Configure a limit (e.g., 100 requests per 15 minutes) and apply it globally or to specific routes like login. It returns 429 when limit exceeded.
+
+Coding Questions
+
+1. Write a middleware that logs the method and URL of each request.
+
+```javascript
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+```
+
+2. Create a route that accepts a POST request with JSON body and returns it.
+
+```javascript
+app.post('/echo', (req, res) => {
+  res.json(req.body);
+});
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Not calling next() Always call next unless ending response
+Forgetting body parser Use express.json() and urlencoded
+Blocking event loop Use async/await, avoid sync operations
+Not handling errors Use error middleware and async wrapper
+Exposing stack traces Hide in production; log server-side
+Not using router Use express.Router() for modularity
+Ignoring CORS Configure properly with trusted origins
+Not setting security headers Use helmet
+Hardcoding configuration Use environment variables
+
+---
+
+This concludes Module 23: Express.js. The next module will be Module 24: MongoDB, covering MongoDB fundamentals, integration with Node/Express, Mongoose, CRUD operations, and more.
+
+Module 24: MongoDB
+
+MongoDB is a popular NoSQL document-oriented database that stores data in flexible, JSON-like documents. It is designed for scalability, high availability, and ease of development, making it a common choice for modern web applications, especially those built with JavaScript/Node.js. This module covers MongoDB fundamentals, integration with Node.js using the native driver and Mongoose ODM, CRUD operations, schema design, indexing, aggregation, and security/performance best practices.
+
+---
+
+1. Definition
+
+1.1 What is MongoDB?
+
+MongoDB is a cross-platform, document-oriented NoSQL database that stores data in BSON (Binary JSON) format. Unlike relational databases that use tables and rows, MongoDB uses collections and documents. Each document is a set of key-value pairs with a dynamic schema, allowing different documents in the same collection to have different fields.
+
+1.2 What Problem It Solves
+
+Traditional relational databases require a fixed schema and enforce relationships through foreign keys, which can be rigid for rapidly evolving applications. MongoDB's flexible schema allows developers to store data in a way that maps naturally to objects in programming languages, enabling faster development and easier scaling. It is particularly suited for:
+
+· Applications with evolving data models.
+· Storing semi-structured or unstructured data (logs, JSON, catalogs).
+· Horizontal scaling across many servers (sharding).
+· High write loads and real-time analytics.
+
+1.3 Why It Was Introduced
+
+MongoDB was developed by MongoDB Inc. (formerly 10gen) and first released in 2009. It was created to address the limitations of relational databases in handling large volumes of rapidly changing, semi-structured data, and to provide a database that could scale out easily across clusters.
+
+1.4 Where It Is Used
+
+· Content management systems
+· E-commerce product catalogs
+· Mobile applications
+· Internet of Things (IoT) data
+· Real-time analytics
+· Catalogs and user profiles
+
+1.5 When It Should Be Used
+
+· When you need flexible schema and rapid iteration.
+· When your data is document-centric (nested structures, arrays).
+· When horizontal scalability is a priority.
+· When you have high write throughput.
+· When you are building a JavaScript/Node.js application (natural fit with JSON).
+
+1.6 When It Should Not Be Used
+
+· When you need complex joins and transactions across multiple documents (though MongoDB supports multi-document ACID transactions since v4.0, they are less efficient than relational joins).
+· When data has many relationships and requires strong referential integrity.
+· When your application is heavily transactional with many operations that must be atomic across many entities.
+· When you need strict schema enforcement (though you can define schemas in Mongoose).
+
+1.7 Relationship with Surrounding Concepts
+
+· Node.js/Express: MongoDB is commonly accessed from Node.js using the native mongodb driver or Mongoose ODM.
+· Mongoose: An ODM (Object Data Modeling) library that provides schema validation, middleware, and query building.
+· JSON/BSON: MongoDB stores data in BSON, a binary representation of JSON-like documents.
+· MongoDB Atlas: Fully managed cloud database service.
+
+---
+
+2. Why MongoDB Exists
+
+2.1 The Problem Before MongoDB
+
+Before MongoDB, most applications used relational databases (MySQL, PostgreSQL). While reliable, they required schemas to be defined upfront, making changes difficult. They also used SQL joins, which can be expensive for deeply nested data. Scaling relational databases horizontally (across many servers) is complex. MongoDB addressed these pain points by offering a flexible, scalable, document-oriented database.
+
+2.2 The Solution MongoDB Provides
+
+· Flexible schema: documents can have varying fields.
+· Horizontal scalability: sharding distributes data across clusters.
+· Rich query language: supports CRUD, filtering, sorting, aggregation.
+· Indexing: supports secondary indexes, text indexes, geospatial indexes.
+· Replication: replica sets provide high availability and data redundancy.
+· JavaScript friendliness: uses JSON-like documents, easy for JS developers.
+
+2.3 What Happens If We Don't Use It?
+
+You would use a relational database (PostgreSQL, MySQL) or another NoSQL (Cassandra, CouchDB). That is perfectly valid; the choice depends on the application's needs. MongoDB's advantages are its flexibility and scalability, but relational databases offer stronger consistency and SQL joins.
+
+2.4 Alternatives
+
+· PostgreSQL: relational, ACID, supports JSON.
+· MySQL: relational, widely used.
+· CouchDB: document-oriented, RESTful.
+· Cassandra: wide-column, highly scalable.
+· DynamoDB: Amazon's managed NoSQL.
+
+2.5 Why Choose MongoDB?
+
+· Great for JavaScript/Node.js stack.
+· Flexible data model.
+· Scalable and performant for many workloads.
+· Strong ecosystem (Atlas, Mongoose, Compass GUI).
+· Good documentation and community.
+
+---
+
+3. Core Concepts
+
+3.1 Database
+
+A container for collections. Each database has its own set of files on disk. A single MongoDB server can host multiple databases.
+
+3.2 Collection
+
+A group of MongoDB documents, analogous to a table in relational databases. Collections do not enforce a schema.
+
+3.3 Document
+
+A record in a MongoDB collection, analogous to a row. It is a set of key-value pairs, stored in BSON. Documents have a unique _id field (ObjectId by default).
+
+Example document:
+
+```json
+{
+  "_id": ObjectId("64f..."),
+  "name": "Alice",
+  "age": 30,
+  "email": "alice@example.com",
+  "hobbies": ["reading", "gaming"],
+  "address": {
+    "city": "New York",
+    "zip": "10001"
+  }
+}
+```
+
+3.4 BSON
+
+Binary JSON, the binary-encoded serialization of JSON-like documents. It extends JSON with additional data types (Date, ObjectId, etc.).
+
+3.5 ObjectId
+
+A 12-byte unique identifier for documents, generated by MongoDB. It consists of timestamp, machine ID, process ID, and counter.
+
+3.6 Indexes
+
+Indexes improve query performance by allowing MongoDB to find documents without scanning the whole collection. Common types: single field, compound, text, geospatial, unique.
+
+3.7 Replication and Sharding
+
+· Replica Set: a group of MongoDB servers that maintain the same data set, providing redundancy and failover.
+· Sharding: distributing data across multiple machines to support large datasets and high throughput.
+
+3.8 Aggregation Pipeline
+
+A framework for data processing, transforming documents through multiple stages ($match, $group, $project, $sort, etc.).
+
+---
+
+4. Prerequisites
+
+· Basic understanding of databases (tables vs collections, rows vs documents).
+· JavaScript/Node.js knowledge (for integration).
+· Familiarity with JSON.
+
+---
+
+5. Internal Working
+
+5.1 Storage Engine
+
+MongoDB uses a pluggable storage engine, default is WiredTiger. It provides document-level concurrency, compression, and in-memory caching. WiredTiger stores data in B-tree structures.
+
+5.2 Query Flow
+
+```mermaid
+flowchart LR
+    Client[Application] --> Driver[MongoDB Driver]
+    Driver --> Server[MongoDB Server]
+    Server --> QueryOptimizer[Query Optimizer]
+    QueryOptimizer --> Index[Index]
+    QueryOptimizer --> Collection[Collection Data]
+    Collection --> Return[Return Results]
+```
+
+The server parses the query, determines whether an index can be used, fetches matching documents, and returns results.
+
+5.3 Indexing Internals
+
+Indexes are stored as B-trees. Each index entry contains the indexed field value and a pointer to the document. Compound indexes store multiple fields in order.
+
+5.4 Data Storage in BSON
+
+Documents are serialized to BSON for storage. BSON supports more data types than JSON (Date, ObjectId, binary). The driver converts between BSON and native language objects.
+
+5.5 ACID Transactions
+
+MongoDB supports multi-document transactions in replica sets and sharded clusters since v4.0. Transactions use snapshot isolation and are similar to relational transactions but with performance considerations.
+
+---
+
+6. Syntax and Structure
+
+6.1 Basic Commands (Mongo Shell)
+
+```javascript
+// Show databases
+show dbs
+
+// Use or create database
+use mydb
+
+// Insert a document
+db.users.insertOne({ name: "Alice", age: 30 })
+
+// Insert many
+db.users.insertMany([{ name: "Bob" }, { name: "Charlie" }])
+
+// Query
+db.users.find({ age: { $gt: 25 } })
+
+// Update
+db.users.updateOne({ name: "Alice" }, { $set: { age: 31 } })
+
+// Delete
+db.users.deleteOne({ name: "Bob" })
+
+// Count
+db.users.countDocuments({})
+
+// Create index
+db.users.createIndex({ email: 1 }, { unique: true })
+
+// Aggregation
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } },
+  { $group: { _id: "$city", count: { $sum: 1 } } }
+])
+```
+
+6.2 Using MongoDB with Node.js (Native Driver)
+
+Install: npm install mongodb
+
+```javascript
+const { MongoClient } = require('mongodb');
+
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+
+async function run() {
+  try {
+    await client.connect();
+    const db = client.db('mydb');
+    const users = db.collection('users');
+
+    // Insert
+    await users.insertOne({ name: 'Alice', age: 30 });
+
+    // Query
+    const result = await users.findOne({ name: 'Alice' });
+    console.log(result);
+  } finally {
+    await client.close();
+  }
+}
+
+run().catch(console.dir);
+```
+
+---
+
+7. Basic Example
+
+7.1 Inserting and Querying Documents (Shell)
+
+```javascript
+use testdb
+
+db.products.insertMany([
+  { name: "Laptop", price: 1200, category: "Electronics" },
+  { name: "Shirt", price: 25, category: "Clothing" },
+  { name: "Headphones", price: 150, category: "Electronics" }
+])
+
+// Find all products
+db.products.find()
+
+// Find products under $100
+db.products.find({ price: { $lt: 100 } })
+
+// Find electronics sorted by price desc
+db.products.find({ category: "Electronics" }).sort({ price: -1 })
+```
+
+7.2 Node.js Basic CRUD
+
+```javascript
+const { MongoClient } = require('mongodb');
+
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+
+async function main() {
+  await client.connect();
+  const db = client.db('store');
+  const products = db.collection('products');
+
+  // Create
+  await products.insertOne({ name: 'Phone', price: 699, category: 'Electronics' });
+
+  // Read
+  const product = await products.findOne({ name: 'Phone' });
+  console.log(product);
+
+  // Update
+  await products.updateOne({ name: 'Phone' }, { $set: { price: 649 } });
+
+  // Delete
+  await products.deleteOne({ name: 'Phone' });
+
+  await client.close();
+}
+main();
+```
+
+---
+
+8. Practical Example
+
+8.1 Using Mongoose ODM
+
+Mongoose provides a schema-based solution to model MongoDB data in Node.js. Install: npm install mongoose
+
+```javascript
+const mongoose = require('mongoose');
+
+// Connect
+mongoose.connect('mongodb://localhost:27017/myapp');
+
+// Define schema
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  age: { type: Number, min: 0 },
+  createdAt: { type: Date, default: Date.now },
+  hobbies: [String],
+  address: {
+    city: String,
+    zip: String
+  }
+});
+
+// Create model
+const User = mongoose.model('User', userSchema);
+
+// CRUD operations
+async function run() {
+  // Create
+  const newUser = await User.create({ name: 'Alice', email: 'alice@example.com', age: 30 });
+  console.log(newUser);
+
+  // Read
+  const user = await User.findOne({ email: 'alice@example.com' });
+  console.log(user);
+
+  // Update
+  await User.updateOne({ email: 'alice@example.com' }, { $set: { age: 31 } });
+
+  // Delete
+  await User.deleteOne({ email: 'alice@example.com' });
+
+  await mongoose.disconnect();
+}
+run();
+```
+
+8.2 Query with filters and sorting
+
+```javascript
+const users = await User.find({ age: { $gte: 18 } })
+  .sort({ name: 1 })
+  .limit(10)
+  .select('name email');
+```
+
+---
+
+9. Advanced Example
+
+9.1 Aggregation Pipeline
+
+```javascript
+const results = await Order.aggregate([
+  { $match: { status: 'completed' } },
+  { $unwind: '$items' },
+  { $group: {
+      _id: '$items.productId',
+      totalQuantity: { $sum: '$items.quantity' },
+      totalRevenue: { $sum: { $multiply: ['$items.quantity', '$items.price'] } }
+  }},
+  { $sort: { totalRevenue: -1 } },
+  { $lookup: {
+      from: 'products',
+      localField: '_id',
+      foreignField: '_id',
+      as: 'product'
+  }},
+  { $unwind: '$product' },
+  { $project: { productName: '$product.name', totalQuantity: 1, totalRevenue: 1 } }
+]);
+```
+
+9.2 Indexing for Performance
+
+```javascript
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ name: 'text' }); // text index for search
+```
+
+9.3 Transactions (Multi-document)
+
+```javascript
+const session = await mongoose.startSession();
+session.startTransaction();
+try {
+  await Account.updateOne({ _id: fromId }, { $inc: { balance: -100 } }, { session });
+  await Account.updateOne({ _id: toId }, { $inc: { balance: 100 } }, { session });
+  await session.commitTransaction();
+} catch (err) {
+  await session.abortTransaction();
+  throw err;
+} finally {
+  session.endSession();
+}
+```
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Building a Product Catalog for E-Commerce
+
+The catalog needs:
+
+· Products with nested attributes (variants, images).
+· Search and filtering by category, price, brand.
+· High read throughput.
+· Evolving product attributes (e.g., different categories have different fields).
+
+10.2 Solution with MongoDB
+
+· Store products as documents with nested arrays for variants, images.
+· Use dynamic fields for category-specific attributes.
+· Create indexes on category, price, brand, and text index for search.
+· Use aggregation for advanced filtering and faceted navigation.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    React[React Frontend] --> API[Express API]
+    API --> Mongoose[Mongoose ODM]
+    Mongoose --> MongoDB[(MongoDB)]
+    MongoDB --> Indexes[Indexes]
+```
+
+10.4 Implementation Highlights
+
+· Mongoose schema with strict: false or using Schema.Types.Mixed for dynamic attributes.
+· Queries with $and, $or, $regex for filters.
+· Aggregation pipeline for faceted search.
+· Indexing strategy based on query patterns.
+
+---
+
+11. Common Mistakes
+
+1. Not designing indexes – queries become slow as data grows.
+2. Using $where or JavaScript expressions – slow and insecure.
+3. Overusing nested arrays – can cause large documents and poor performance.
+4. Not using lean() in Mongoose for read-only queries (returns plain JS objects, faster).
+5. Ignoring write concerns – may risk data loss.
+6. Not handling duplicate key errors for unique indexes.
+7. Using skip and limit for deep pagination – better to use range-based pagination.
+8. Not setting timeouts for database operations.
+9. Storing large files in documents – use GridFS.
+10. Not closing connections in standalone scripts.
+
+---
+
+12. Best Practices
+
+· Use indexes for frequent queries; monitor with explain().
+· Use Mongoose for schema validation and middleware.
+· Use lean() for read-heavy operations.
+· Limit document size (16 MB max); use GridFS for large files.
+· Use $set for partial updates to avoid overwriting.
+· Use replica sets for high availability.
+· Use sharding for very large datasets.
+· Use transactions only when necessary; they have overhead.
+· Sanitize inputs to prevent NoSQL injection.
+· Use environment variables for connection strings.
+· Use connection pooling (built-in driver).
+
+---
+
+13. Security
+
+· Authentication: enable authentication, use strong credentials.
+· Authorization: role-based access control (RBAC).
+· Network security: use TLS/SSL, restrict access with firewall/VPC.
+· Encryption: encrypt data at rest (WiredTiger encryption) and in transit.
+· Injection: use parameterized queries in MongoDB driver (e.g., { name: query } not { name: { $eq: query } } with string concatenation). Avoid passing user input directly into query operators.
+· Exposure: never expose _id or internal fields unnecessarily; sanitize outputs.
+· Update security patches and use MongoDB Atlas managed service for built-in security.
+
+---
+
+14. Performance and Scalability
+
+· Use proper indexes; analyze with explain().
+· Use $project to return only needed fields.
+· Use limit and skip carefully; prefer range queries for pagination.
+· Use bulkWrite for batch operations.
+· Use hint() to force index if optimizer is wrong.
+· Use readPreference to read from secondaries for read scaling.
+· Use sharding to distribute data and load.
+· Use connection pooling.
+· Monitor performance with MongoDB Profiler or Atlas metrics.
+· Use explain('executionStats') to diagnose slow queries.
+
+---
+
+15. Testing
+
+· Use an in-memory MongoDB (mongodb-memory-server) for tests.
+· Use Mongoose with mongoose.connect to test DB operations.
+· Mock MongoDB for unit tests (using sinon or jest.mock).
+· Test with supertest and a test database.
+· Ensure cleanup after tests.
+
+Example with mongodb-memory-server:
+
+```javascript
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongoose = require('mongoose');
+
+let mongoServer;
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri());
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
+});
+```
+
+---
+
+16. Comparison: MongoDB vs PostgreSQL
+
+Feature MongoDB PostgreSQL
+Data model Document-oriented (BSON) Relational (tables)
+Schema Flexible (optional with Mongoose) Strict, enforced
+Joins Limited, via aggregation $lookup SQL JOINs
+Transactions Multi-document ACID (v4+) Full ACID
+Scalability Horizontal sharding built-in Replication, sharding via extensions
+Query language MongoDB Query Language SQL
+Use case Flexible, scalable, rapid iteration Strong consistency, complex queries
+Indexes Yes, many types Yes, many types
+Ecosystem Mongoose, Atlas Sequelize, Prisma, pg
+
+Choose MongoDB when flexibility and horizontal scaling are priorities; choose PostgreSQL when relational integrity and complex SQL queries are needed.
+
+---
+
+17. Quick Revision
+
+· MongoDB is a NoSQL document database.
+· Data stored in collections as BSON documents.
+· _id default ObjectId.
+· Use indexes for query performance.
+· Use Mongoose ODM in Node.js for schema validation and models.
+· CRUD: insertOne/insertMany, find/findOne, updateOne/updateMany, deleteOne/deleteMany.
+· Aggregation pipeline for complex data processing.
+· Use replica sets and sharding for scalability.
+· Security: authentication, TLS, parameterized queries.
+· Test with mongodb-memory-server.
+
+---
+
+18. Interview Questions – Module 24
+
+Beginner
+
+1. What is MongoDB?
+      MongoDB is a NoSQL document-oriented database that stores data in flexible, JSON-like documents (BSON) in collections.
+2. What is a collection?
+      A collection is a group of MongoDB documents, similar to a table in relational databases.
+3. What is Mongoose?
+      Mongoose is an ODM (Object Data Modeling) library for MongoDB and Node.js that provides schema validation, middleware, and query building.
+
+Intermediate
+
+1. How do you perform CRUD operations in MongoDB?
+      Use insertOne/insertMany, find/findOne, updateOne/updateMany with $set, and deleteOne/deleteMany.
+2. Explain indexes in MongoDB.
+      Indexes are special data structures that store a small portion of the collection's data in an easy-to-traverse form. They improve query performance. Common types: single field, compound, text, geospatial.
+3. What is an aggregation pipeline?
+      It's a framework for data processing where documents pass through multiple stages ($match, $group, $project, $sort, $lookup) to transform and combine data.
+
+Advanced
+
+1. How do you handle relationships in MongoDB?
+      You can embed related data (denormalization) for one-to-one/one-to-many that are always accessed together, or use references (ObjectId) for many-to-many or when data is large. You can also use $lookup in aggregation for joins.
+2. Explain replica sets and sharding.
+      A replica set is a group of MongoDB servers that maintain the same data, providing redundancy and failover. Sharding distributes data across multiple machines (shards) to handle large datasets and high throughput.
+3. How do you prevent NoSQL injection in MongoDB?
+      Sanitize user input; never pass untrusted data directly into query operators like $where. Use parameterized queries (e.g., { field: value } not building query objects from strings). Mongoose's query builder helps by not allowing raw object injection in most cases.
+
+Scenario-Based
+
+Q: Your MongoDB queries are slow. What steps would you take to diagnose and fix?
+Answer: Use explain('executionStats') to analyze the query plan. Check if an index is used; if not, create appropriate indexes based on query fields. Use $project to reduce data transfer. Consider restructuring queries to avoid $where or large scans. If needed, use hint() to force index.
+
+Coding Questions
+
+1. Write a Mongoose schema for a Blog Post with title, content, author (reference to User), tags (array), and timestamps.
+
+```javascript
+const postSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  tags: [String],
+}, { timestamps: true });
+
+const Post = mongoose.model('Post', postSchema);
+```
+
+2. Write an aggregation to find the total number of posts per tag.
+
+```javascript
+Post.aggregate([
+  { $unwind: '$tags' },
+  { $group: { _id: '$tags', count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+]);
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+No indexes Create indexes for frequent queries
+Using $where Avoid; use native operators
+Not using lean() Use lean() for read-only
+Skipping validation Use Mongoose validation
+Not handling duplicate key errors Catch and handle
+Deep pagination with skip/limit Use range-based pagination
+Storing large files Use GridFS
+Not closing connections Ensure connections are closed
+Ignoring security Enable auth, TLS, use parameterized queries
+
+---
+
+This concludes Module 24: MongoDB. The next module will be Module 25: PostgreSQL, covering relational database fundamentals, SQL, integration with Node.js using pg and ORMs (Sequelize, Prisma), and best practices.
+
+
+
+Module 25: PostgreSQL
+
+PostgreSQL is a powerful, open-source, object-relational database system with over 30 years of active development. It is known for its reliability, feature robustness, and performance. It uses and extends the SQL language and supports both relational (SQL) and non-relational (JSON) queries. This module covers PostgreSQL fundamentals, SQL, integration with Node.js using the native pg driver and ORMs (Sequelize, Prisma), and best practices for building robust backend systems with PostgreSQL.
+
+---
+
+1. Definition
+
+1.1 What is PostgreSQL?
+
+PostgreSQL, often simply called "Postgres", is a free and open-source relational database management system (RDBMS). It is designed to handle a range of workloads, from single machines to data warehouses or web services with many concurrent users. It is ACID-compliant, supports advanced data types, indexing, full-text search, and extensibility.
+
+1.2 What Problem It Solves
+
+PostgreSQL provides a robust, transactional, and standards-compliant database for applications that require strict data integrity, complex queries, and relational data modeling. It solves the need for a reliable, scalable SQL database with advanced features not found in simpler databases.
+
+1.3 Why It Was Introduced
+
+PostgreSQL evolved from the Ingres project at UC Berkeley (1986) and was later named PostgreSQL to reflect its SQL support. It was created to address the need for an extensible, open-source database system that could handle complex queries and large datasets while maintaining ACID properties.
+
+1.4 Where It Is Used
+
+· Enterprise applications (ERP, CRM)
+· Web applications and APIs
+· Financial systems requiring transactions
+· Geospatial applications (PostGIS)
+· Data warehousing and analytics
+· Content management systems
+
+1.5 When It Should Be Used
+
+· When you need relational integrity and complex joins.
+· When transactions and consistency are critical.
+· When you need advanced SQL features (window functions, CTEs, full-text search).
+· When your data has many relationships and benefits from normalization.
+· When you need a mature, feature-rich open-source database.
+
+1.6 When It Should Not Be Used
+
+· When your data model is unstructured or highly dynamic (MongoDB may be better).
+· When you need very high horizontal scalability out-of-the-box (though PostgreSQL can scale with extensions like Citus).
+· When your application is primarily document-oriented with little need for joins.
+· When you require extremely low latency for simple key-value lookups (Redis may be better).
+
+1.7 Relationship with Surrounding Concepts
+
+· SQL: the query language used by PostgreSQL.
+· Node.js/Express: PostgreSQL is commonly accessed from Node.js using the pg driver, Sequelize, Prisma, or TypeORM.
+· MongoDB: NoSQL alternative; PostgreSQL supports JSON columns but is relational at core.
+· ACID: Atomicity, Consistency, Isolation, Durability – properties PostgreSQL enforces.
+
+---
+
+2. Why PostgreSQL Exists
+
+2.1 The Problem Before PostgreSQL
+
+Early relational databases were often proprietary and expensive, lacking advanced features. MySQL, while popular, had limitations in concurrency, full-text search, and data integrity. PostgreSQL was created to be a feature-rich, open-source alternative that supports advanced SQL standards, extensibility, and data integrity.
+
+2.2 The Solution PostgreSQL Provides
+
+· ACID compliance – ensures transaction reliability.
+· Advanced indexing – B-tree, Hash, GiST, GIN, BRIN.
+· Full-text search – built-in, supports ranking and highlighting.
+· JSON support – can store and query JSON data.
+· Geospatial support – via PostGIS extension.
+· Extensibility – custom data types, functions, languages.
+· Concurrency – MVCC (Multi-Version Concurrency Control) for high concurrency without locking.
+· Replication and partitioning – built-in for scaling and high availability.
+
+2.3 What Happens If We Don't Use It?
+
+You would use another database (MySQL, SQL Server, Oracle, or NoSQL). That is perfectly fine; the choice depends on requirements. PostgreSQL's strengths are its feature richness, standards compliance, and advanced capabilities, making it a top choice for complex, transactional systems.
+
+2.4 Alternatives
+
+· MySQL – simpler, widely used, good for web apps.
+· SQLite – embedded, zero-config, for small applications.
+· SQL Server – Microsoft's enterprise database.
+· Oracle – enterprise, expensive.
+· NoSQL (MongoDB, Cassandra) – for non-relational data.
+
+2.5 Why Choose PostgreSQL?
+
+· Free and open-source.
+· Advanced features comparable to commercial databases.
+· Strong community and ecosystem.
+· Excellent performance and scalability.
+· Supports JSON for flexibility.
+· Can be used as a relational database with NoSQL capabilities.
+
+---
+
+3. Core Concepts
+
+3.1 Database
+
+A database is a container for schemas, tables, indexes, etc. A single PostgreSQL server can host multiple databases.
+
+3.2 Table
+
+A table is a collection of rows, each with a fixed set of columns defined by a schema. Tables are the primary storage unit.
+
+3.3 Row / Record
+
+A row is a single entry in a table, consisting of values for each column.
+
+3.4 Column
+
+A column defines a specific attribute of the table with a data type (e.g., integer, text, timestamp).
+
+3.5 Primary Key
+
+A column or set of columns that uniquely identifies each row. Typically an auto-incrementing integer (SERIAL or IDENTITY) or UUID.
+
+3.6 Foreign Key
+
+A column that references a primary key in another table, establishing a relationship and enforcing referential integrity.
+
+3.7 Indexes
+
+Indexes speed up data retrieval. Types: B-tree (default), Hash, GiST, GIN, BRIN. They can be unique, partial, expression, etc.
+
+3.8 Transactions
+
+A transaction is a sequence of operations performed as a single logical unit. It must be atomic, consistent, isolated, and durable (ACID).
+
+3.9 Views
+
+A view is a virtual table based on a query. It simplifies complex queries and provides security by hiding underlying tables.
+
+3.10 Schema
+
+A namespace that contains database objects (tables, views, functions). Helps organize and manage permissions.
+
+3.11 SQL (Structured Query Language)
+
+Standard language for querying and manipulating relational databases. PostgreSQL implements SQL with extensions.
+
+---
+
+4. Prerequisites
+
+· Basic understanding of databases and SQL.
+· JavaScript/Node.js knowledge (for integration).
+· Familiarity with relational concepts (tables, rows, joins).
+
+---
+
+5. Internal Working
+
+5.1 Architecture Overview
+
+PostgreSQL uses a client-server model. The server process manages database files, accepts connections, and executes queries. Each client connection is handled by a separate backend process (or thread in some configurations). Key components:
+
+· Postmaster: main process that listens for connections and spawns backend processes.
+· Backend process: handles individual client queries.
+· Shared memory: used for caching (shared_buffers) and inter-process communication.
+· WAL (Write-Ahead Log): ensures durability by recording changes before they are applied.
+· MVCC: Multi-Version Concurrency Control allows concurrent transactions to see consistent snapshots without locking.
+
+5.2 Query Execution Flow
+
+```mermaid
+flowchart LR
+    Client[Client Application] --> Parser[Parser]
+    Parser --> Analyzer[Analyzer]
+    Analyzer --> Planner[Planner/Optimizer]
+    Planner --> Executor[Executor]
+    Executor --> Storage[Storage Engine]
+    Storage --> DataFiles[(Data Files + Indexes)]
+```
+
+· Parser: checks syntax, creates parse tree.
+· Analyzer: resolves table/column names, checks permissions, adds semantic info.
+· Planner: chooses optimal execution plan based on statistics and indexes.
+· Executor: runs the plan, fetching and processing rows.
+· Storage: reads/writes data from disk, using shared buffers for caching.
+
+5.3 MVCC and Concurrency
+
+PostgreSQL uses MVCC: each transaction sees a snapshot of the database at the start. Writes create new versions of rows, leaving old versions for concurrent readers. This avoids read locks and allows high concurrency.
+
+5.4 Indexes Internals
+
+Indexes are stored separately from table data. A B-tree index is a balanced tree structure with key-value pairs pointing to rows. The query planner uses indexes to quickly locate matching rows.
+
+---
+
+6. Syntax and Structure
+
+6.1 Basic SQL Commands
+
+```sql
+-- Create table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  age INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert
+INSERT INTO users (name, email, age) VALUES ('Alice', 'alice@example.com', 30);
+
+-- Select
+SELECT * FROM users WHERE age > 18;
+
+-- Update
+UPDATE users SET age = 31 WHERE email = 'alice@example.com';
+
+-- Delete
+DELETE FROM users WHERE id = 1;
+
+-- Create index
+CREATE INDEX idx_users_email ON users(email);
+
+-- Join
+SELECT u.name, o.order_date FROM users u
+JOIN orders o ON u.id = o.user_id;
+```
+
+6.2 Data Types
+
+· INTEGER, BIGINT, SMALLINT
+· NUMERIC(precision, scale) / DECIMAL
+· VARCHAR(n) / TEXT
+· DATE, TIME, TIMESTAMP, TIMESTAMPTZ
+· BOOLEAN
+· JSON, JSONB
+· UUID
+· SERIAL / IDENTITY (auto-increment)
+· Arrays (TEXT[]), etc.
+
+6.3 Advanced SQL Features
+
+· JOINs: INNER, LEFT, RIGHT, FULL.
+· Subqueries and CTEs: WITH ... AS.
+· Window functions: ROW_NUMBER(), RANK(), SUM() OVER.
+· Aggregation: GROUP BY, HAVING.
+· Transactions: BEGIN; COMMIT; ROLLBACK;
+· Constraints: PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL.
+· Triggers and functions: procedural SQL (PL/pgSQL).
+
+6.4 Using PostgreSQL from Node.js
+
+Native pg driver:
+
+```javascript
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'secret',
+  database: 'myapp',
+});
+
+pool.query('SELECT * FROM users WHERE age > $1', [18], (err, result) => {
+  if (err) throw err;
+  console.log(result.rows);
+});
+```
+
+With async/await:
+
+```javascript
+const result = await pool.query('SELECT * FROM users WHERE age > $1', [18]);
+console.log(result.rows);
+```
+
+Using environment variables:
+
+```javascript
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+```
+
+---
+
+7. Basic Example
+
+7.1 Creating a Table and Inserting Data
+
+```sql
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  price NUMERIC(10,2) CHECK (price >= 0),
+  category VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+INSERT INTO products (name, price, category) VALUES
+('Laptop', 999.99, 'Electronics'),
+('Shirt', 19.99, 'Clothing'),
+('Headphones', 149.99, 'Electronics');
+```
+
+7.2 Simple Queries
+
+```sql
+-- Select all products
+SELECT * FROM products;
+
+-- Filter and sort
+SELECT name, price FROM products WHERE category = 'Electronics' ORDER BY price DESC;
+
+-- Count by category
+SELECT category, COUNT(*) FROM products GROUP BY category;
+```
+
+7.3 Node.js Basic CRUD with pg
+
+```javascript
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function main() {
+  // Create
+  await pool.query('INSERT INTO products (name, price, category) VALUES ($1, $2, $3)', ['Phone', 599.99, 'Electronics']);
+
+  // Read
+  const { rows } = await pool.query('SELECT * FROM products');
+  console.log(rows);
+
+  // Update
+  await pool.query('UPDATE products SET price = $1 WHERE name = $2', [549.99, 'Phone']);
+
+  // Delete
+  await pool.query('DELETE FROM products WHERE name = $1', ['Phone']);
+
+  await pool.end();
+}
+main();
+```
+
+---
+
+8. Practical Example
+
+8.1 Building a User Management API with Express and pg
+
+This example connects to PostgreSQL and exposes REST endpoints.
+
+Setup:
+
+```javascript
+// db.js
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+module.exports = pool;
+```
+
+Route handler:
+
+```javascript
+// routes/users.js
+const express = require('express');
+const router = express.Router();
+const pool = require('../db');
+
+// GET all users
+router.get('/', async (req, res, next) => {
+  try {
+    const result = await pool.query('SELECT id, name, email, age FROM users');
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET single user
+router.get('/:id', async (req, res, next) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST create user
+router.post('/', async (req, res, next) => {
+  try {
+    const { name, email, age } = req.body;
+    const result = await pool.query(
+      'INSERT INTO users (name, email, age) VALUES ($1, $2, $3) RETURNING *',
+      [name, email, age]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT update user
+router.put('/:id', async (req, res, next) => {
+  try {
+    const { name, email, age } = req.body;
+    const result = await pool.query(
+      'UPDATE users SET name=$1, email=$2, age=$3 WHERE id=$4 RETURNING *',
+      [name, email, age, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE user
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const result = await pool.query('DELETE FROM users WHERE id=$1 RETURNING *', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
+```
+
+App setup:
+
+```javascript
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.use('/users', require('./routes/users'));
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: 'Internal server error' });
+});
+app.listen(3000);
+```
+
+---
+
+9. Advanced Example
+
+9.1 Using an ORM: Sequelize
+
+Sequelize provides an object-oriented interface to PostgreSQL, handling SQL generation, migrations, and associations.
+
+Install: npm install sequelize pg pg-hstore
+
+Define model:
+
+```javascript
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL);
+
+const User = sequelize.define('User', {
+  name: { type: DataTypes.STRING, allowNull: false },
+  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  age: DataTypes.INTEGER,
+});
+
+const Order = sequelize.define('Order', {
+  total: { type: DataTypes.DECIMAL(10,2), allowNull: false },
+  orderDate: { type: DataTypes.DATE, defaultValue: Sequelize.NOW },
+});
+
+User.hasMany(Order);
+Order.belongsTo(User);
+
+(async () => {
+  await sequelize.sync({ force: true }); // creates tables
+  // create user with orders
+  const user = await User.create({ name: 'Alice', email: 'alice@example.com' });
+  const order = await Order.create({ total: 99.99, userId: user.id });
+  console.log(await user.getOrders());
+})();
+```
+
+9.2 Using Prisma
+
+Prisma is a modern ORM with a type-safe client and declarative schema.
+
+Schema (schema.prisma):
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  name  String
+  email String  @unique
+  age   Int?
+  orders Order[]
+}
+
+model Order {
+  id      Int      @id @default(autoincrement())
+  total   Decimal
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id])
+}
+```
+
+Usage:
+
+```javascript
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+async function main() {
+  const user = await prisma.user.create({
+    data: {
+      name: 'Alice',
+      email: 'alice@example.com',
+      orders: { create: { total: 99.99 } }
+    },
+  });
+  console.log(user);
+}
+```
+
+9.3 Advanced Queries with Window Functions
+
+```sql
+SELECT
+  name,
+  category,
+  price,
+  RANK() OVER (PARTITION BY category ORDER BY price DESC) AS rank_in_category
+FROM products;
+```
+
+9.4 Transactions with pg
+
+```javascript
+const client = await pool.connect();
+try {
+  await client.query('BEGIN');
+  await client.query('UPDATE accounts SET balance = balance - 100 WHERE id = $1', [1]);
+  await client.query('UPDATE accounts SET balance = balance + 100 WHERE id = $1', [2]);
+  await client.query('COMMIT');
+} catch (e) {
+  await client.query('ROLLBACK');
+  throw e;
+} finally {
+  client.release();
+}
+```
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Building a Banking System with Transaction Integrity
+
+A banking application needs to manage accounts, handle transfers between accounts atomically, and ensure data consistency even under concurrent operations. SQL injections and data anomalies must be prevented.
+
+10.2 Solution
+
+· Use PostgreSQL as the database with ACID transactions.
+· Use pg driver with parameterized queries to prevent SQL injection.
+· Implement transfer logic in a transaction: debit one account, credit another, ensure balance never negative using CHECK constraint.
+· Use SELECT ... FOR UPDATE to lock rows and prevent race conditions.
+· Use foreign keys and indexes for referential integrity and performance.
+· Use connection pooling.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    Express[Express API] --> Pool[pg Pool]
+    Pool --> PostgreSQL[(PostgreSQL)]
+    PostgreSQL --> Transactions[Transactions]
+    PostgreSQL --> Locking[Row Locking]
+    PostgreSQL --> Indexes[Indexes]
+    PostgreSQL --> Constraints[Constraints]
+```
+
+10.4 Implementation Highlights
+
+· BEGIN / COMMIT / ROLLBACK for atomic transfers.
+· SELECT ... FOR UPDATE to lock rows.
+· UPDATE ... WHERE balance >= amount or CHECK constraint to prevent negative balances.
+· Parameterized queries with $1, $2 placeholders.
+· Use pg.Pool for connection reuse.
+· Error handling and rollback on failure.
+
+---
+
+11. Common Mistakes
+
+1. Not using parameterized queries – leads to SQL injection.
+2. Forgetting to close transactions – open transactions can lock resources and cause deadlocks.
+3. Ignoring indexes – slow queries as data grows.
+4. Using SELECT * unnecessarily – fetches more data than needed, wastes bandwidth and memory.
+5. Not handling NULL values correctly, causing unexpected results.
+6. Overlooking connection pooling – creating a new connection per request is inefficient; use Pool.
+7. Not using RETURNING clause when you need the inserted/updated row in one query.
+8. Not setting proper constraints (foreign keys, check) leading to invalid data.
+9. Using synchronous fs or blocking code in Node.js with pg (though pg is async).
+10. Not managing migrations – schema changes applied manually; use migration tools.
+
+---
+
+12. Best Practices
+
+· Always use parameterized queries to prevent SQL injection.
+· Use Pool for connection pooling.
+· Use transactions for multi-step operations that must be atomic.
+· Use RETURNING to get affected rows.
+· Design indexes based on query patterns; use EXPLAIN ANALYZE to verify.
+· Use COALESCE and NULLIF to handle NULLs.
+· Normalize data but consider denormalization for read-heavy reports.
+· Use TIMESTAMPTZ for timezone-aware timestamps.
+· Implement pagination with LIMIT/OFFSET or keyset pagination.
+· Use pgcrypto for encryption and UUID generation if needed.
+· Use pgbouncer or similar for connection pooling in production if using many connections.
+· Use dotenv for configuration; never hardcode credentials.
+· Use pg or an ORM (Sequelize/Prisma) consistently.
+· Write migrations for schema changes.
+· Monitor and log slow queries.
+
+---
+
+13. Security
+
+· SQL injection: Always use parameterized queries or ORM methods. Never concatenate user input into SQL strings.
+· Authentication: Use strong passwords, limit access with roles and privileges. Use pg_hba.conf to control host-based authentication.
+· Network: Use SSL/TLS for connections (ssl: true in pg config). Restrict access using firewall/VPC.
+· Encryption: Use SSL for data in transit; consider disk encryption for data at rest.
+· Permissions: Grant least privilege; separate roles for read/write.
+· Row-level security: For multi-tenant applications, use RLS policies.
+· Prevent SQL injection in dynamic table/column names: Validate identifiers against whitelist.
+· Use SECURITY DEFINER functions carefully.
+· Do not expose stack traces or database errors to clients.
+
+13.1 Example: Parameterized Query
+
+```javascript
+// Safe: parameterized
+await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+// Unsafe: string concatenation (never do this)
+await pool.query(`SELECT * FROM users WHERE email = '${email}'`);
+```
+
+---
+
+14. Performance and Scalability
+
+· Indexing: Create indexes on frequently queried columns; use composite indexes for multi-column filters.
+· Query optimization: Use EXPLAIN ANALYZE to identify slow queries.
+· Connection pooling: Use Pool and consider pgbouncer for high concurrency.
+· Caching: Use Redis for frequently accessed data.
+· Partitioning: Partition large tables by date or key.
+· Replication: Use streaming replication for read scaling and high availability.
+· Sharding: For very large datasets, consider sharding with extensions like Citus.
+· Vertical scaling: Increase memory, CPU, and use fast storage (SSD).
+· Tune PostgreSQL config: shared_buffers, work_mem, effective_cache_size.
+· Avoid N+1 queries: Use JOINs or batch queries.
+· Use LIMIT to paginate results.
+· Use VACUUM and ANALYZE to maintain statistics and reclaim storage.
+
+---
+
+15. Testing
+
+· Use an in-memory or dedicated test database.
+· Use pg-mem for unit tests without a real database (or use a real test database in CI).
+· Use Jest with supertest for API integration tests.
+· Mock the pg module if you want to isolate logic.
+· Test transactions and rollback scenarios.
+· Use factory_bot style for seeding test data.
+· Clean up test data after each test.
+
+Example: Testing with Jest and a test database
+
+```javascript
+// setup.js
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/testdb';
+
+// In tests, use the real pool and run queries.
+// Clean tables before each test:
+beforeEach(async () => {
+  await pool.query('TRUNCATE users RESTART IDENTITY CASCADE');
+});
+```
+
+---
+
+16. Comparison: PostgreSQL vs MongoDB
+
+Feature PostgreSQL MongoDB
+Data model Relational (tables) Document-oriented (BSON)
+Schema Strict, enforced Flexible, dynamic
+Query language SQL MongoDB Query Language
+Joins Native SQL JOINs Aggregation $lookup
+Transactions Full ACID, long history Multi-document ACID (v4+)
+Scalability Vertical + replication, sharding via extensions Horizontal sharding built-in
+JSON support Excellent (JSONB) Native
+Indexes B-tree, GIN, GiST, etc. Many types
+Use case Complex queries, relational integrity, transactions Flexible schema, rapid iteration, high write load
+Ecosystem Sequelize, Prisma, pg Mongoose, native driver
+Strengths Reliability, features, SQL Flexibility, ease of use
+
+Choose PostgreSQL when you need strong consistency, complex queries, and relational integrity; choose MongoDB when you need schema flexibility and horizontal scalability.
+
+---
+
+17. Quick Revision
+
+· PostgreSQL is a powerful open-source relational database.
+· Core concepts: tables, rows, columns, primary/foreign keys, indexes, transactions, views.
+· Use SQL for querying; use parameterized queries to prevent SQL injection.
+· Node.js integration: pg driver, Sequelize, Prisma.
+· Transactions ensure ACID; use BEGIN/COMMIT/ROLLBACK.
+· Performance: indexes, connection pooling, EXPLAIN ANALYZE, tuning.
+· Security: parameterized queries, SSL, least privilege, row-level security.
+· Test with a test database or pg-mem.
+· Choose PostgreSQL for relational data, complex joins, and transactional consistency.
+
+---
+
+18. Interview Questions – Module 25
+
+Beginner
+
+1. What is PostgreSQL?
+      PostgreSQL is a powerful, open-source, object-relational database system known for reliability, feature robustness, and performance. It uses SQL and supports ACID transactions.
+2. What is a primary key?
+      A column or set of columns that uniquely identifies each row in a table. It cannot contain NULL values.
+3. How do you connect to PostgreSQL from Node.js?
+      Use the pg library and create a Pool with connection string or config, then run queries with pool.query().
+
+Intermediate
+
+1. Explain foreign keys and referential integrity.
+      A foreign key is a column that references a primary key in another table, establishing a relationship. Referential integrity ensures that the foreign key value must exist in the referenced table, preventing orphaned records.
+2. What is a transaction? Why is it important?
+      A transaction is a sequence of database operations that are executed as a single unit, ensuring atomicity, consistency, isolation, and durability (ACID). It's important for data integrity, especially when multiple operations must either all succeed or all fail.
+3. How do you prevent SQL injection in Node.js with PostgreSQL?
+      Use parameterized queries (e.g., pool.query('SELECT * FROM users WHERE id = $1', [id])). Never concatenate user input into SQL strings. ORMs like Sequelize/Prisma also provide safe query builders.
+
+Advanced
+
+1. What is MVCC and how does it benefit PostgreSQL?
+      MVCC (Multi-Version Concurrency Control) allows multiple transactions to access the same data concurrently without blocking each other. It provides each transaction a snapshot of the database, enabling consistent reads while writes create new versions, reducing lock contention.
+2. How do you optimize a slow query in PostgreSQL?
+      Use EXPLAIN ANALYZE to see the query plan. Identify if indexes are missing; create appropriate indexes. Rewrite the query to avoid unnecessary joins or full scans. Consider using LIMIT, WHERE filters, and proper JOIN ordering. Update statistics with ANALYZE.
+3. Explain connection pooling and why it's important.
+      Connection pooling reuses existing database connections instead of opening a new one for each request. This reduces overhead, improves performance, and prevents resource exhaustion. In Node.js, use pg.Pool; in high-traffic scenarios, consider pgbouncer.
+
+Scenario-Based
+
+Q: You need to implement a money transfer between two accounts. How would you ensure data consistency?
+Answer: Use a transaction. Begin a transaction, lock the two account rows using SELECT ... FOR UPDATE, debit one account and credit the other, and commit. If any step fails, rollback. Use CHECK constraints to prevent negative balances and parameterized queries to avoid injection.
+
+Coding Questions
+
+1. Write a parameterized query to insert a user into a users table.
+
+```javascript
+const name = 'Alice';
+const email = 'alice@example.com';
+const age = 30;
+await pool.query(
+  'INSERT INTO users (name, email, age) VALUES ($1, $2, $3)',
+  [name, email, age]
+);
+```
+
+2. Write a SQL query to get all orders for a user with id 1, joining users and orders tables.
+
+```sql
+SELECT o.* FROM orders o
+JOIN users u ON o.user_id = u.id
+WHERE u.id = 1;
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+String concatenation in SQL Use parameterized queries
+Not using transactions Use transactions for multi-step operations
+Missing indexes Create indexes based on query patterns
+Ignoring connection pooling Use Pool
+Not handling NULLs Use COALESCE, NULLIF
+Returning too much data Select only needed columns
+Not using RETURNING Use RETURNING * for insert/update/delete
+Hardcoding credentials Use environment variables
+Not managing schema changes Use migrations (e.g., node-pg-migrate, Sequelize migrations)
+Blocking event loop Use async/await with pg
+
+---
+
+This concludes Module 25: PostgreSQL. The next module will be Module 26: REST API Design, covering principles of designing RESTful APIs, best practices, versioning, authentication, pagination, and error handling.
+
+
+Module 26: REST API Design
+
+REST (Representational State Transfer) is an architectural style for designing networked applications. It relies on stateless, client-server communication, typically over HTTP. Designing a well-structured REST API is crucial for building scalable, maintainable, and easily consumable backend services. This module covers REST principles, resource naming, HTTP methods, status codes, versioning, authentication, pagination, error handling, and best practices. It also addresses how to design APIs that integrate seamlessly with React frontends.
+
+---
+
+1. Definition
+
+1.1 What is REST API Design?
+
+REST API design refers to the practice of structuring application programming interfaces (APIs) according to the principles of Representational State Transfer (REST). A REST API exposes resources (e.g., users, products) via HTTP endpoints, using standard HTTP methods (GET, POST, PUT, PATCH, DELETE) to perform operations on those resources. Data is typically exchanged in JSON or XML format.
+
+1.2 What Problem It Solves
+
+Without a standardized API design, APIs can be inconsistent, difficult to understand, and hard to maintain. REST provides a set of conventions that make APIs predictable, scalable, and easy to consume by clients. It leverages HTTP semantics, which are widely understood and supported.
+
+1.3 Why It Was Introduced
+
+REST was introduced by Roy Fielding in his 2000 doctoral dissertation as an architectural style for distributed hypermedia systems. It aimed to provide a simpler, more scalable alternative to complex RPC and SOAP protocols by using the existing HTTP protocol and its methods.
+
+1.4 Where It Is Used
+
+· Web and mobile applications
+· Microservices communication
+· Public APIs (e.g., GitHub, Twitter, Stripe)
+· Backend for single-page applications (SPA)
+· Internet of Things (IoT) device APIs
+
+1.5 When It Should Be Used
+
+· When you need a simple, stateless, and cacheable API.
+· When you want to leverage HTTP methods and status codes.
+· When the API is resource-oriented.
+· When building web services consumed by various clients.
+
+1.6 When It Should Not Be Used
+
+· When you need real-time bidirectional communication (use WebSockets).
+· When operations are procedure-oriented rather than resource-oriented (could use RPC/gRPC).
+· When you need extremely low latency and binary serialization (gRPC/MessagePack may be better).
+· When you need built-in stateful sessions (though REST can use tokens).
+
+1.7 Relationship with Surrounding Concepts
+
+· HTTP: REST is built on top of HTTP and its methods/status codes.
+· JSON: The most common data format for REST APIs.
+· Express: A popular Node.js framework for building REST APIs.
+· MongoDB/PostgreSQL: Databases used to store resources.
+· Authentication: REST APIs often use token-based authentication (JWT).
+
+---
+
+2. Why REST API Design Exists
+
+2.1 The Problem Before REST
+
+Before REST, APIs were often designed ad hoc, with inconsistent naming, methods, and error responses. SOAP was a heavyweight alternative using XML and complex specifications. RPC-style APIs were also used. These approaches led to:
+
+· Steep learning curves.
+· Poor interoperability.
+· Difficulty in caching and scaling.
+· Lack of standardization.
+
+2.2 The Solution REST Provides
+
+REST provides a set of architectural constraints that, when followed, produce APIs that are:
+
+· Stateless: each request contains all necessary information.
+· Client-server: separation of concerns.
+· Cacheable: responses can be cached.
+· Uniform interface: consistent resource identification and manipulation.
+· Layered system: intermediate servers can be added.
+
+These constraints promote scalability, simplicity, and evolvability.
+
+2.3 What Happens If We Don't Use It?
+
+You may end up with an API that is inconsistent, difficult to maintain, and hard for clients to use. It may not scale well or leverage HTTP caching. While you can design a successful API without strictly adhering to REST, understanding its principles helps make better decisions.
+
+2.4 Alternatives
+
+· GraphQL: flexible query language, allows clients to request specific fields.
+· gRPC: high-performance, binary, based on Protocol Buffers, ideal for microservices.
+· SOAP: legacy XML-based protocol, still used in enterprise.
+· WebSockets: for real-time, bidirectional communication.
+
+2.5 Why Choose REST?
+
+· Simplicity and ease of use.
+· Wide support across tools and languages.
+· Leverages HTTP caching and semantics.
+· Ideal for resource-oriented APIs.
+· Human-readable (JSON).
+· Easier to debug with browser/curl.
+
+---
+
+3. Core Concepts
+
+3.1 Resources
+
+A resource is any identifiable entity that can be manipulated via the API. Examples: users, products, orders. Each resource should have a unique identifier (URI). Resources are typically represented as JSON objects.
+
+3.2 URIs (Endpoints)
+
+URIs should be nouns, not verbs, and reflect the resource hierarchy. Use plural nouns for collections.
+
+Examples:
+
+· /users – collection of users
+· /users/123 – a specific user
+· /users/123/orders – sub-collection of orders for user 123
+
+3.3 HTTP Methods
+
+· GET: retrieve a resource or collection.
+· POST: create a new resource.
+· PUT: replace a resource entirely.
+· PATCH: partially update a resource.
+· DELETE: remove a resource.
+
+3.4 HTTP Status Codes
+
+· 200 OK: successful GET/PUT/PATCH.
+· 201 Created: successful POST.
+· 204 No Content: successful DELETE or empty response.
+· 400 Bad Request: client error (validation failure).
+· 401 Unauthorized: authentication required.
+· 403 Forbidden: authenticated but not allowed.
+· 404 Not Found: resource doesn't exist.
+· 500 Internal Server Error: server error.
+
+3.5 Statelessness
+
+Each request from client must contain all information needed to process it. The server does not store client session state between requests. Authentication tokens are sent with each request.
+
+3.6 Versioning
+
+APIs should be versioned to allow changes without breaking existing clients. Common approaches: URI versioning (/v1/users), query parameter (?version=1), header (Accept: application/vnd.api+json;version=1). URI versioning is most popular.
+
+3.7 Pagination, Filtering, Sorting
+
+For collections, provide query parameters to control result sets:
+
+· ?page=2&limit=20 – pagination.
+· ?sort=created_at&order=desc – sorting.
+· ?category=electronics – filtering.
+· ?q=keyword – search.
+
+3.8 Content Negotiation
+
+The server should support different representations (JSON, XML) based on Accept header. JSON is most common.
+
+3.9 HATEOAS (Hypermedia as the Engine of Application State)
+
+A REST principle where responses include hyperlinks to related resources, enabling discoverability. While often not fully implemented, it can improve API usability.
+
+---
+
+4. Prerequisites
+
+· Understanding of HTTP protocol (methods, status codes, headers).
+· Basic knowledge of JSON.
+· Familiarity with a backend framework (Express, Django, etc.).
+· Understanding of databases.
+
+---
+
+5. Internal Working / Architecture
+
+5.1 Request Processing Flow
+
+```mermaid
+flowchart LR
+    Client[Client] -->|HTTP Request| Server[API Server]
+    Server --> Middleware[Middleware Stack]
+    Middleware --> Router[Router]
+    Router --> Controller[Controller]
+    Controller --> Service[Service Layer]
+    Service --> Database[(Database)]
+    Database --> Service
+    Service --> Controller
+    Controller --> Response[Response]
+    Response --> Client
+```
+
+5.2 Typical API Architecture
+
+· Routes: define endpoints and map to controllers.
+· Controllers: handle request/response, validation, and call services.
+· Services: contain business logic and interact with models/repositories.
+· Models/Repositories: interact with database.
+· Middleware: cross-cutting concerns (auth, logging, error handling, CORS).
+
+5.3 Statelessness and Scaling
+
+Because REST APIs are stateless, any server instance can handle any request (if backed by shared database). This enables horizontal scaling by adding more servers behind a load balancer.
+
+5.4 Caching
+
+REST responses can be cached at various levels (client, CDN, server) if the appropriate cache headers are set (Cache-Control, ETag). GET requests are cacheable; POST/PUT/DELETE generally not.
+
+---
+
+6. Syntax and Structure (Best Practices)
+
+6.1 Naming Conventions
+
+· Use lowercase letters and hyphens or underscores for multi-word resources (e.g., /blog-posts or /blog_posts). Hyphens are more common in URLs.
+· Use plural nouns for collections (/users not /user).
+· Keep URLs short and meaningful.
+· Avoid deep nesting (max 2-3 levels). Use query parameters for filtering.
+
+6.2 Request and Response Formats
+
+· JSON is standard.
+· Use consistent response envelopes for errors (e.g., { "error": { "code": 400, "message": "Invalid email" } }).
+· Use consistent date/time formats (ISO 8601, UTC).
+
+6.3 Example Endpoints
+
+```
+GET    /api/v1/products          # list products
+POST   /api/v1/products          # create product
+GET    /api/v1/products/:id      # get product
+PUT    /api/v1/products/:id      # replace product
+PATCH  /api/v1/products/:id      # partial update
+DELETE /api/v1/products/:id      # delete product
+```
+
+6.4 Query Parameters
+
+```
+GET /api/v1/products?category=electronics&page=2&limit=20&sort=price&order=desc
+```
+
+---
+
+7. Basic Example
+
+7.1 Simple REST API with Express
+
+```javascript
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+let products = [
+  { id: 1, name: 'Laptop', price: 999.99 },
+  { id: 2, name: 'Shirt', price: 19.99 },
+];
+
+// GET all
+app.get('/api/products', (req, res) => {
+  res.json(products);
+});
+
+// GET one
+app.get('/api/products/:id', (req, res) => {
+  const product = products.find(p => p.id === parseInt(req.params.id));
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+  res.json(product);
+});
+
+// POST create
+app.post('/api/products', (req, res) => {
+  const newProduct = { id: products.length + 1, ...req.body };
+  products.push(newProduct);
+  res.status(201).json(newProduct);
+});
+
+// PUT update
+app.put('/api/products/:id', (req, res) => {
+  const index = products.findIndex(p => p.id === parseInt(req.params.id));
+  if (index === -1) return res.status(404).json({ message: 'Product not found' });
+  products[index] = { id: parseInt(req.params.id), ...req.body };
+  res.json(products[index]);
+});
+
+// DELETE
+app.delete('/api/products/:id', (req, res) => {
+  const index = products.findIndex(p => p.id === parseInt(req.params.id));
+  if (index === -1) return res.status(404).json({ message: 'Product not found' });
+  products.splice(index, 1);
+  res.status(204).send();
+});
+
+app.listen(3000);
+```
+
+7.2 Using Proper Status Codes
+
+· 201 Created for POST.
+· 204 No Content for DELETE.
+· 404 Not Found for missing resource.
+
+---
+
+8. Practical Example
+
+8.1 Designing a User API with Validation and Pagination
+
+Endpoint: /api/v1/users
+
+· GET /api/v1/users?page=1&limit=10 – list users with pagination.
+· POST /api/v1/users – create user with validation.
+· GET /api/v1/users/:id – get user.
+· PUT /api/v1/users/:id – full update.
+· PATCH /api/v1/users/:id – partial update.
+· DELETE /api/v1/users/:id – delete.
+
+Validation rules:
+
+· name required, string, length 2-100.
+· email required, valid email, unique.
+· age optional, integer, 0-120.
+
+Controller example with validation:
+
+```javascript
+// controllers/usersController.js
+const usersService = require('../services/usersService');
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const users = await usersService.getUsers({ page, limit });
+    res.json({
+      data: users,
+      pagination: { page, limit, total: users.length },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createUser = async (req, res, next) => {
+  try {
+    const { name, email, age } = req.body;
+    // basic validation (could use Joi/Zod)
+    if (!name || name.length < 2) {
+      return res.status(400).json({ error: { message: 'Name must be at least 2 characters' } });
+    }
+    const newUser = await usersService.createUser({ name, email, age });
+    res.status(201).json(newUser);
+  } catch (err) {
+    if (err.code === '23505') { // unique violation in PostgreSQL
+      return res.status(409).json({ error: { message: 'Email already exists' } });
+    }
+    next(err);
+  }
+};
+```
+
+8.2 Response Envelope
+
+Consistency in response format:
+
+```json
+{
+  "data": [ ... ],
+  "pagination": { "page": 1, "limit": 10, "total": 25 }
+}
+```
+
+Error envelope:
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "Validation failed",
+    "details": ["Name is required"]
+  }
+}
+```
+
+---
+
+9. Advanced Example
+
+9.1 Implementing HATEOAS Links
+
+Add links to related resources in responses:
+
+```json
+{
+  "id": 123,
+  "name": "Alice",
+  "links": {
+    "self": "/api/v1/users/123",
+    "orders": "/api/v1/users/123/orders",
+    "update": "/api/v1/users/123",
+    "delete": "/api/v1/users/123"
+  }
+}
+```
+
+This can be generated dynamically in the controller.
+
+9.2 Versioning via URI and Header
+
+URI versioning:
+
+```
+/api/v1/users
+/api/v2/users
+```
+
+Header versioning:
+
+Client sends Accept: application/vnd.myapi.v2+json.
+
+9.3 Rate Limiting
+
+Use express-rate-limit to limit requests:
+
+```javascript
+const rateLimit = require('express-rate-limit');
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: 'Too many requests from this IP',
+});
+app.use('/api/', limiter);
+```
+
+9.4 Pagination with Keyset
+
+For large datasets, use keyset pagination (also called cursor-based):
+
+```
+GET /api/v1/users?limit=20&after=12345
+```
+
+Where after is the last ID seen. More efficient than offset for deep pages.
+
+9.5 API Documentation
+
+Use OpenAPI/Swagger to document endpoints, parameters, and responses. Tools like swagger-jsdoc and swagger-ui-express can generate interactive documentation.
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Designing a REST API for an E-Commerce Platform
+
+The platform needs APIs for:
+
+· Products: list, details, search, filter.
+· Cart: add/remove items, view cart.
+· Orders: create order from cart, view order history.
+· Users: register, login, profile.
+
+10.2 Solution
+
+· Use REST principles with versioned endpoints (/api/v1).
+· Use plural nouns for resources.
+· Implement authentication via JWT; protected endpoints require Authorization: Bearer <token>.
+· Use query parameters for filtering, sorting, pagination.
+· Use consistent error responses.
+· Document with OpenAPI.
+
+Endpoint examples:
+
+```
+POST   /api/v1/auth/register
+POST   /api/v1/auth/login
+GET    /api/v1/products?category=electronics&page=2
+POST   /api/v1/cart/items
+GET    /api/v1/cart
+POST   /api/v1/orders
+GET    /api/v1/orders/:id
+GET    /api/v1/users/profile
+```
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    Client[React Frontend] -->|JSON over HTTP| API[REST API]
+    API --> AuthMiddleware[Auth Middleware]
+    API --> Routes[Resource Routes]
+    Routes --> Controllers[Controllers]
+    Controllers --> Services[Services]
+    Services --> DB[(Database)]
+```
+
+10.4 Implementation Highlights
+
+· Routes are separated by resource.
+· Controllers parse request and call services.
+· Services handle business logic.
+· Error middleware returns consistent JSON.
+· Validation using Zod/Joi.
+
+---
+
+11. Common Mistakes
+
+1. Using verbs in URIs – use nouns (/getUsers vs /users).
+2. Not using proper HTTP methods – e.g., using POST for updates.
+3. Returning wrong status codes – e.g., 200 for errors, or 500 for client errors.
+4. Inconsistent error responses – some endpoints return string, others object.
+5. Not versioning API – breaking changes break clients.
+6. Ignoring pagination – returning entire dataset can cause performance issues.
+7. Not validating input – leads to data corruption and security issues.
+8. Leaking internal implementation details – stack traces, database errors.
+9. Not using HTTPS – exposes sensitive data.
+10. No rate limiting – vulnerable to abuse.
+11. Deep nesting of resources – e.g., /users/1/orders/2/items/3. Keep shallow.
+12. Using GET for state-changing operations – should be idempotent and safe.
+
+---
+
+12. Best Practices
+
+· Use nouns for resources; plural for collections.
+· Use HTTP methods correctly: GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (delete).
+· Return appropriate status codes.
+· Use consistent error format.
+· Version your API (URI versioning is common).
+· Implement pagination, filtering, sorting, and search.
+· Use JSON for request/response.
+· Use HTTPS everywhere.
+· Use authentication and authorization (JWT, OAuth).
+· Rate limit your API.
+· Validate input on server side.
+· Document your API (OpenAPI/Swagger).
+· Use HATEOAS where helpful (links).
+· Use consistent naming conventions (hyphens or underscores).
+· Use Content-Type: application/json in responses.
+· Log API requests for monitoring.
+· Use ETag or Last-Modified for caching.
+
+---
+
+13. Security
+
+· Authentication: Use JWT or OAuth2. Protect sensitive endpoints.
+· Authorization: Enforce role-based access (admin, user).
+· Input validation: Validate all incoming data to prevent injection attacks (SQL, NoSQL, XSS). Use libraries like Zod/Joi.
+· Rate limiting: Prevent brute force and DoS.
+· CORS: Restrict origins to trusted domains.
+· Helmet: Set secure HTTP headers.
+· HTTPS: Encrypt data in transit.
+· Parameterized queries: Prevent SQL injection.
+· Avoid exposing internal errors: Return generic error messages.
+· Use short-lived tokens and refresh tokens.
+· Use SameSite cookies if cookies are used.
+
+---
+
+14. Performance and Scalability
+
+· Caching: Use HTTP caching headers, CDN, or Redis for frequent reads.
+· Pagination: Always paginate large collections.
+· Indexes: Ensure database indexes for query fields.
+· Compression: Use compression middleware.
+· Connection pooling: Use DB connection pools.
+· Horizontal scaling: Stateless APIs can scale behind load balancer.
+· Asynchronous processing: For long-running tasks, use queues (e.g., Bull).
+· Use ETag and Last-Modified to reduce bandwidth.
+· Profile endpoints; identify and optimize slow queries.
+
+---
+
+15. Testing
+
+· Unit tests: test controllers, services, validation.
+· Integration tests: test API endpoints with supertest and a test database.
+· Mock external services if needed.
+· Test all CRUD operations, validation, authentication, error handling.
+· Use tools like Jest, Mocha, Chai.
+· Consider Postman/Newman for API smoke tests.
+
+Example test with Supertest:
+
+```javascript
+const request = require('supertest');
+const app = require('../app');
+
+describe('GET /api/v1/products', () => {
+  it('returns list of products', async () => {
+    const res = await request(app).get('/api/v1/products');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body.data)).toBe(true);
+  });
+});
+```
+
+---
+
+16. Comparison: REST vs GraphQL vs gRPC
+
+Feature REST GraphQL gRPC
+Data format JSON/XML JSON Protocol Buffers
+Schema No built-in schema (documented via OpenAPI) Strong schema (SDL) Strong schema (.proto)
+Flexibility Client receives fixed shape Client specifies fields Fixed by proto
+Performance Good with HTTP/2 Can suffer N+1 but optimized Very high
+Caching Built-in with HTTP More complex Limited
+Learning curve Low Moderate Moderate
+Use case CRUD APIs, web/mobile APIs with varying client needs Microservices, low latency
+
+---
+
+17. Quick Revision
+
+· REST APIs are resource-oriented, stateless, and use HTTP methods.
+· Use plural nouns for collections; use correct HTTP methods.
+· Return proper status codes (200, 201, 204, 400, 401, 403, 404, 500).
+· Version your API (/v1).
+· Implement pagination, filtering, sorting.
+· Use consistent JSON and error formats.
+· Secure with JWT, validation, rate limiting, HTTPS.
+· Document with OpenAPI.
+· Test thoroughly with Supertest.
+
+---
+
+18. Interview Questions – Module 26
+
+Beginner
+
+1. What is REST?
+      REST (Representational State Transfer) is an architectural style for designing networked applications, using HTTP methods and stateless communication.
+2. What are the common HTTP methods used in REST APIs?
+      GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (delete).
+3. What is a resource in REST?
+      A resource is an entity or object that can be accessed and manipulated via the API, identified by a URI.
+
+Intermediate
+
+1. Why should API endpoints use nouns instead of verbs?
+      Because REST is resource-oriented; the HTTP method already conveys the action. Using nouns keeps the API intuitive and consistent.
+2. How do you handle pagination in a REST API?
+      Use query parameters like ?page=2&limit=20. Return pagination metadata in the response (total, page, limit). For large datasets, consider keyset pagination.
+3. What is the difference between PUT and PATCH?
+      PUT replaces the entire resource with the provided representation, while PATCH applies a partial update, modifying only the provided fields.
+
+Advanced
+
+1. How would you version a REST API?
+      Use URI versioning (/v1/users), query parameter (?version=1), or custom header (Accept: application/vnd.api+json;version=1). URI versioning is the most common and explicit.
+2. Explain HATEOAS and its benefits.
+      HATEOAS (Hypermedia as the Engine of Application State) means that API responses include hyperlinks to related resources, allowing clients to navigate the API dynamically. It improves discoverability and reduces coupling, but adds complexity.
+3. How do you handle authentication and authorization in a REST API?
+      Use JWT (Bearer token) in the Authorization header. The server verifies the token on each request, extracts user info, and checks permissions. For finer control, use OAuth2 scopes or role-based access control.
+
+Scenario-Based
+
+Q: Your API is returning a 500 error for a validation issue. How do you fix the design?
+Answer: The validation issue is a client error, so it should return 400 Bad Request with details about the invalid fields. I would add input validation middleware (e.g., Joi/Zod) that checks the request body and returns 400 with specific error messages before reaching the controller.
+
+Coding Questions
+
+1. Write an Express route that handles GET /api/users with pagination query parameters.
+
+```javascript
+app.get('/api/users', async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  const users = await User.find().skip(offset).limit(limit);
+  res.json({ data: users, page, limit });
+});
+```
+
+2. Create a simple error-handling middleware for a REST API that returns JSON errors.
+
+```javascript
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  res.status(status).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      status,
+    },
+  });
+});
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Using verbs in URLs Use nouns, let HTTP methods define action
+Not using proper status codes Return 201 for creation, 204 for delete, 404 for missing
+Inconsistent error format Use a uniform error object
+Not versioning API Version from the start
+Returning entire datasets Implement pagination
+Skipping validation Validate all input server-side
+Not using HTTPS Always use HTTPS
+No rate limiting Add rate limiting to prevent abuse
+Exposing internal errors Return generic errors, log details server-side
+Deep resource nesting Keep nesting shallow (max 2-3)
+
+---
+
+This concludes Module 26: REST API Design. The next module will be Module 27: Authentication API, covering the backend implementation of authentication endpoints (register, login, refresh, logout) with JWT, bcrypt, and secure token management.
+
+
+Module 27: Authentication API
+
+Authentication API is a critical backend component that handles user registration, login, token issuance, token refresh, and logout. It enables secure access to protected resources and is the foundation of user identity management in web applications. This module covers the complete implementation of authentication endpoints using Node.js, Express, JWT, bcrypt, and secure token storage. You will learn how to build a production-ready authentication API that integrates seamlessly with React frontends.
+
+---
+
+1. Definition
+
+1.1 What is an Authentication API?
+
+An Authentication API is a set of backend endpoints that manage user identity and access. It typically includes:
+
+· Registration: create a new user account.
+· Login: verify credentials and issue tokens.
+· Token refresh: obtain a new access token using a refresh token.
+· Logout: invalidate tokens or clear session.
+
+These endpoints use token-based authentication (usually JWT) to grant stateless, secure access to protected resources.
+
+1.2 What Problem It Solves
+
+It solves the problem of verifying user identity and managing sessions in a stateless, scalable manner. Without a proper authentication API, each protected endpoint would need to handle credential verification, leading to duplication, inconsistency, and security risks. Authentication API centralizes these concerns and provides a standardized way to authenticate users.
+
+1.3 Why It Was Introduced
+
+As web applications moved to single-page applications and mobile apps, traditional server-side sessions (cookies) became less suitable for cross-domain APIs. Token-based authentication, especially JWT, emerged as a solution that is stateless, scalable, and works well with REST APIs. Authentication APIs were designed to handle token generation, validation, and refresh.
+
+1.4 Where It Is Used
+
+· Web and mobile applications requiring user accounts.
+· Single-page applications (SPA) with a backend API.
+· Microservices where each service needs to authenticate requests.
+· Third-party integrations and public APIs.
+
+1.5 When It Should Be Used
+
+· When your application has protected resources that require user authentication.
+· When you need to manage user sessions in a stateless manner.
+· When you want to support multiple client types (web, mobile) with the same backend.
+
+1.6 When It Should Not Be Used
+
+· For simple internal tools with no user accounts (though basic auth could be used).
+· If you require server-side sessions with server-side logout (JWT doesn't support invalidation unless you keep a blacklist).
+· If you need fine-grained real-time session revocation (consider OAuth2 with introspection).
+
+1.7 Relationship with Surrounding Concepts
+
+· JWT (JSON Web Token): compact, signed token for transmitting claims.
+· bcrypt: library for hashing passwords.
+· Express: framework to build the API routes.
+· MongoDB/PostgreSQL: database to store user credentials and tokens.
+· HTTP-only cookies: secure storage for refresh tokens.
+· Authorization: determining what an authenticated user can access.
+
+---
+
+2. Why Authentication API Exists
+
+2.1 The Problem Before Authentication API
+
+Before standardized authentication APIs, each application implemented its own user management, often storing passwords insecurely and using custom session logic. This led to security vulnerabilities (e.g., plaintext passwords, SQL injection), poor user experience, and duplication across services.
+
+2.2 The Solution Authentication API Provides
+
+A dedicated Authentication API provides:
+
+· Centralized user registration and login.
+· Secure password hashing.
+· Stateless token issuance.
+· Token refresh for extended sessions.
+· Consistent error handling.
+· Easy integration with frontends and other services.
+
+2.3 What Happens If We Don't Use It?
+
+You would need to implement authentication logic in every endpoint or service, leading to security risks and maintainability issues. Passwords might be stored without proper hashing, tokens might be mishandled, and session management would be inconsistent.
+
+2.4 Alternatives
+
+· OAuth2/OpenID Connect: for delegated authorization and third-party login.
+· Session-based authentication: server-side sessions with cookies (traditional).
+· Passport.js: a middleware for Node.js that supports multiple strategies.
+· Auth services: Auth0, Firebase Auth, AWS Cognito.
+
+2.5 Why Choose JWT-based Authentication API?
+
+· Stateless: no server session store needed.
+· Scalable: any server can validate token if it has the secret.
+· Cross-platform: works well with mobile and web.
+· Self-contained: user info in token.
+· Easy to integrate with REST APIs.
+
+---
+
+3. Core Concepts
+
+3.1 User Registration
+
+The process of creating a new user account. It involves:
+
+· Validating input (email format, password strength).
+· Checking if email already exists.
+· Hashing the password (bcrypt, argon2).
+· Storing user in database.
+· Optionally issuing tokens immediately.
+
+3.2 User Login
+
+The process of verifying credentials. It involves:
+
+· Finding user by email/username.
+· Comparing provided password with stored hash (bcrypt.compare).
+· Generating access token and refresh token.
+· Returning tokens to client.
+
+3.3 Access Token
+
+A short-lived JWT that grants access to protected endpoints. It is sent in the Authorization header as a Bearer token. It contains user ID, role, and expiration.
+
+3.4 Refresh Token
+
+A long-lived token used to obtain a new access token without re-authentication. It is usually stored in an HTTP-only cookie (or sometimes in the database). It should be rotated on each refresh for security.
+
+3.5 Password Hashing
+
+Passwords are never stored in plaintext. They are hashed using a computationally expensive algorithm (bcrypt, argon2) with a salt. On login, the provided password is hashed and compared to the stored hash.
+
+3.6 Token Refresh Flow
+
+1. Client sends request with access token.
+2. Server returns 401 if token expired.
+3. Client sends refresh token (via cookie or body) to /auth/refresh.
+4. Server validates refresh token and issues new access token (and possibly new refresh token).
+5. Client retries the original request with new token.
+
+3.7 Logout
+
+Logout involves clearing tokens on the client and optionally invalidating the refresh token on the server (e.g., by removing it from database or blacklisting). For JWT, server-side invalidation is not built-in, so a blacklist or short expiry is used.
+
+3.8 Token Storage
+
+· Access token: kept in memory (e.g., React state) or localStorage (with caution). Short-lived.
+· Refresh token: in HTTP-only cookie with Secure, SameSite=Strict, HttpOnly. This protects from XSS.
+
+3.9 Rate Limiting
+
+To prevent brute-force attacks on login/register endpoints, implement rate limiting (e.g., 5 attempts per 15 minutes per IP).
+
+3.10 CSRF Protection
+
+If refresh token is in cookie, CSRF is a concern. Use SameSite cookies and/or CSRF tokens. The refresh endpoint should validate origin.
+
+---
+
+4. Prerequisites
+
+· Node.js and Express.js knowledge.
+· Understanding of JWT and bcrypt.
+· Database setup (MongoDB/PostgreSQL).
+· Basic security knowledge.
+
+---
+
+5. Internal Working
+
+5.1 Registration Flow
+
+```mermaid
+sequenceDiagram
+    Client->>Server: POST /auth/register { email, password }
+    Server->>Database: Check if email exists
+    Database-->>Server: Not found
+    Server->>Server: Hash password with bcrypt
+    Server->>Database: Insert new user
+    Server-->>Client: 201 Created, user info
+```
+
+5.2 Login Flow
+
+```mermaid
+sequenceDiagram
+    Client->>Server: POST /auth/login { email, password }
+    Server->>Database: Find user by email
+    Database-->>Server: User record
+    Server->>Server: bcrypt.compare(password, hash)
+    Server->>Server: Generate access token + refresh token
+    Server-->>Client: 200 OK, access token, refresh token (cookie)
+```
+
+5.3 Refresh Flow
+
+```mermaid
+sequenceDiagram
+    Client->>Server: GET /protected (with access token)
+    Server-->>Client: 401 Unauthorized
+    Client->>Server: POST /auth/refresh (with refresh cookie)
+    Server->>Server: Validate refresh token
+    Server->>Server: Issue new access token
+    Server-->>Client: New access token
+    Client->>Server: Retry original request (with new token)
+    Server-->>Client: 200 OK
+```
+
+5.4 Token Validation
+
+When a protected route is hit, middleware:
+
+1. Extracts Authorization header.
+2. Verifies JWT signature and expiration.
+3. Extracts user info (id, role) and attaches to req.user.
+4. Calls next() or returns 401.
+
+---
+
+6. Syntax and Structure
+
+6.1 Project Structure
+
+```
+backend/
+├── controllers/
+│   └── authController.js
+├── middleware/
+│   ├── authMiddleware.js
+│   └── errorHandler.js
+├── models/
+│   └── User.js
+├── routes/
+│   └── authRoutes.js
+├── utils/
+│   ├── generateTokens.js
+│   └── validate.js
+├── config/
+│   └── index.js
+├── .env
+├── app.js
+└── server.js
+```
+
+6.2 Environment Variables
+
+```
+PORT=5000
+DATABASE_URL=postgres://...
+ACCESS_TOKEN_SECRET=...
+REFRESH_TOKEN_SECRET=...
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
+```
+
+6.3 User Model (Mongoose example)
+
+```javascript
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  createdAt: { type: Date, default: Date.now },
+});
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+userSchema.methods.comparePassword = function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = mongoose.model('User', userSchema);
+```
+
+6.4 Generate Tokens
+
+```javascript
+const jwt = require('jsonwebtoken');
+
+function generateAccessToken(user) {
+  return jwt.sign(
+    { userId: user._id, role: user.role },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+  );
+}
+
+function generateRefreshToken(user) {
+  return jwt.sign(
+    { userId: user._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+  );
+}
+```
+
+6.5 Auth Controller
+
+```javascript
+exports.register = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+    const user = await User.create({ email, password });
+    res.status(201).json({ id: user._id, email: user.email });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    res.json({ accessToken });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.refresh = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.status(401).json({ message: 'No refresh token' });
+  try {
+    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const newAccessToken = generateAccessToken({ _id: payload.userId, role: payload.role });
+    res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid refresh token' });
+  }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('refreshToken');
+  res.status(204).send();
+};
+```
+
+---
+
+7. Basic Example
+
+7.1 Express App with Auth Routes
+
+```javascript
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const authRoutes = require('./routes/authRoutes');
+require('dotenv').config();
+
+const app = express();
+app.use(express.json());
+app.use(cookieParser());
+
+app.use('/auth', authRoutes);
+
+app.listen(5000, () => console.log('Server running'));
+```
+
+7.2 Simple Register/Login with JWT
+
+```javascript
+// routes/authRoutes.js
+const router = require('express').Router();
+const { register, login, refresh, logout } = require('../controllers/authController');
+
+router.post('/register', register);
+router.post('/login', login);
+router.post('/refresh', refresh);
+router.post('/logout', logout);
+
+module.exports = router;
+```
+
+---
+
+8. Practical Example
+
+8.1 Protecting Routes with Middleware
+
+```javascript
+// middleware/authMiddleware.js
+const jwt = require('jsonwebtoken');
+
+function authenticate(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    req.user = { id: payload.userId, role: payload.role };
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+}
+
+function authorize(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    next();
+  };
+}
+
+module.exports = { authenticate, authorize };
+```
+
+8.2 Using Protected Route
+
+```javascript
+router.get('/profile', authenticate, (req, res) => {
+  res.json({ user: req.user });
+});
+
+router.get('/admin', authenticate, authorize('admin'), (req, res) => {
+  res.json({ message: 'Admin data' });
+});
+```
+
+8.3 Rate Limiting on Login
+
+```javascript
+const rateLimit = require('express-rate-limit');
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts, please try again later',
+});
+router.post('/login', loginLimiter, login);
+```
+
+---
+
+9. Advanced Example
+
+9.1 Refresh Token Rotation and Storage in Database
+
+For enhanced security, store refresh tokens in database, rotate them on each refresh, and revoke on logout.
+
+User model (add refreshToken field):
+
+```javascript
+refreshToken: { type: String, default: null },
+```
+
+Login:
+
+```javascript
+const refreshToken = generateRefreshToken(user);
+user.refreshToken = refreshToken;
+await user.save();
+res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+```
+
+Refresh:
+
+```javascript
+exports.refresh = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: 'No refresh token' });
+    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(payload.userId);
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+    user.refreshToken = newRefreshToken;
+    await user.save();
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+    res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    next(err);
+  }
+};
+```
+
+Logout:
+
+```javascript
+exports.logout = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (refreshToken) {
+    const user = await User.findOne({ refreshToken });
+    if (user) {
+      user.refreshToken = null;
+      await user.save();
+    }
+  }
+  res.clearCookie('refreshToken');
+  res.status(204).send();
+};
+```
+
+9.2 Using Argon2 instead of bcrypt
+
+Argon2 is recommended for password hashing due to stronger security properties.
+
+Install: npm install argon2
+
+```javascript
+const argon2 = require('argon2');
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await argon2.hash(this.password);
+  next();
+});
+
+userSchema.methods.comparePassword = function (candidate) {
+  return argon2.verify(this.password, candidate);
+};
+```
+
+9.3 Handling CSRF for Refresh Cookie
+
+Add a CSRF token in a non-HttpOnly cookie and require it in header on refresh requests.
+
+Login:
+
+```javascript
+const csrfToken = crypto.randomBytes(32).toString('hex');
+res.cookie('csrfToken', csrfToken, { httpOnly: false, sameSite: 'strict', secure: true });
+```
+
+Refresh endpoint:
+
+```javascript
+const csrfToken = req.cookies.csrfToken;
+const headerCsrf = req.headers['x-csrf-token'];
+if (csrfToken !== headerCsrf) {
+  return res.status(403).json({ message: 'CSRF token mismatch' });
+}
+```
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Build a Secure Authentication API for a Full-Stack App
+
+The app needs:
+
+· User registration and login.
+· Password hashing.
+· Short-lived access token (15 min) and long-lived refresh token (7 days).
+· Refresh token stored in HTTP-only cookie with rotation.
+· Rate limiting to prevent brute force.
+· Role-based access (admin/user).
+· Logout that invalidates refresh token.
+
+10.2 Solution
+
+· Use Express, MongoDB, JWT, and bcrypt/argon2.
+· Implement auth routes: register, login, refresh, logout.
+· Use middleware for authentication and authorization.
+· Store refresh token in database for rotation and revocation.
+· Use rate limiting on login and register.
+· Use HTTP-only cookies for refresh token.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    Client[React Frontend] --> Register[POST /auth/register]
+    Client --> Login[POST /auth/login]
+    Client --> Refresh[POST /auth/refresh]
+    Client --> Logout[POST /auth/logout]
+    Register --> DB[(MongoDB)]
+    Login --> JWT[Generate Tokens]
+    JWT --> Cookie[Set Refresh Cookie]
+    Refresh --> Validate[Validate Refresh Token]
+    Validate --> Rotate[Rotate Refresh Token]
+    Logout --> Revoke[Revoke Refresh Token]
+```
+
+10.4 Implementation Highlights
+
+· User model with refreshToken field.
+· authMiddleware for protected routes.
+· authorize middleware for role checks.
+· Rate limiting with express-rate-limit.
+· Password hashing with argon2.
+· Token generation with short expiry.
+· Refresh token rotation and revocation.
+· Secure cookies with HttpOnly, Secure, SameSite.
+
+---
+
+11. Common Mistakes
+
+1. Storing passwords in plaintext – always hash with bcrypt/argon2.
+2. Using long-lived access tokens – keep access token short (15-60 min).
+3. Not rotating refresh tokens – vulnerable to token theft; rotate on each refresh.
+4. Not storing refresh token securely – use HTTP-only cookies.
+5. Not validating input – email format, password strength.
+6. Not using HTTPS – tokens exposed in transit.
+7. Not implementing rate limiting – brute force risk.
+8. Not handling CSRF for cookie-based refresh – use SameSite and CSRF tokens.
+9. Inconsistent error messages – can lead to user enumeration.
+10. Not logging out properly – clear cookies and revoke tokens server-side.
+11. Using Math.random() for secrets – use crypto.randomBytes or strong secret generator.
+12. Not checking for duplicate email – leads to unique constraint errors.
+
+---
+
+12. Best Practices
+
+· Hash passwords with bcrypt (cost 10+) or argon2.
+· Use short-lived access tokens (15 min) and rotate refresh tokens.
+· Store refresh token in HTTP-only cookie with Secure, SameSite=Strict.
+· Keep access token in memory on client; don't store in localStorage if possible.
+· Implement rate limiting on auth endpoints.
+· Validate and sanitize all inputs.
+· Use generic error messages to avoid user enumeration.
+· Log authentication events (login, logout, refresh) for security monitoring.
+· Use environment variables for secrets.
+· Rotate refresh tokens on every refresh; revoke on logout.
+· Use HTTPS in production.
+· Implement CSRF protection for refresh endpoint.
+· Use a dedicated auth controller and service layer.
+
+---
+
+13. Security
+
+· Password hashing: bcrypt/argon2 with salt.
+· JWT security: use strong secrets, short expiry, include iss and aud claims if needed.
+· Token storage: access token in memory, refresh token in HTTP-only cookie.
+· CSRF: use SameSite cookies; optionally CSRF tokens for refresh.
+· Rate limiting: prevent brute force.
+· Input validation: prevent injection and malformed data.
+· HTTPS: always.
+· Secure headers: helmet.
+· CORS: restrict origins.
+· User enumeration: return generic "Invalid credentials" for both wrong email and wrong password.
+· Session fixation: generate new tokens on login/refresh.
+· Revocation: store refresh token in DB and revoke on logout/rotation.
+
+---
+
+14. Performance and Scalability
+
+· Token verification is stateless and fast.
+· Database queries for refresh token rotation; index refreshToken field.
+· Use connection pooling.
+· Rate limiting in memory or with Redis for distributed.
+· Consider using a shared secret or JWKS for multi-service validation.
+· Use bcrypt asynchronously to avoid blocking event loop.
+· Cache user data if needed.
+
+---
+
+15. Testing
+
+· Test registration with valid/invalid data.
+· Test login with correct/wrong credentials.
+· Test refresh flow with valid/expired/invalid tokens.
+· Test logout.
+· Test protected routes with and without token.
+· Test rate limiting.
+· Use Jest, Supertest, and a test database.
+
+Example test:
+
+```javascript
+const request = require('supertest');
+const app = require('../app');
+
+describe('POST /auth/register', () => {
+  it('creates a new user', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email: 'test@example.com', password: 'password123' });
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('returns 409 for duplicate email', async () => {
+    await request(app).post('/auth/register').send({ email: 'test@example.com', password: 'password123' });
+    const res = await request(app).post('/auth/register').send({ email: 'test@example.com', password: 'password123' });
+    expect(res.statusCode).toBe(409);
+  });
+});
+```
+
+---
+
+16. Comparison: JWT vs Session-based Authentication
+
+Feature JWT Session-based
+State Stateless (client holds token) Stateful (server stores session)
+Scalability High (no server session store) Requires shared session store
+Storage Client-side (header/cookie) Server-side (memory/DB)
+Invalidation Harder (expiry, blacklist) Easy (destroy session)
+Security Vulnerable if stolen; use short expiry Protected by cookie flags
+Use case APIs, microservices, mobile Traditional web apps
+
+JWT is often preferred for APIs, but session-based can be more secure for server-rendered apps if implemented properly.
+
+---
+
+17. Quick Revision
+
+· Authentication API handles register, login, refresh, logout.
+· Hash passwords with bcrypt/argon2.
+· Use JWT for access tokens (short-lived) and refresh tokens (long-lived).
+· Store refresh token in HTTP-only cookie.
+· Implement rate limiting, validation, and CSRF protection.
+· Use middleware to protect routes.
+· Rotate and revoke refresh tokens.
+· Test all endpoints.
+
+---
+
+18. Interview Questions – Module 27
+
+Beginner
+
+1. What is an Authentication API?
+      A backend service that handles user registration, login, token issuance/refresh, and logout.
+2. What is JWT?
+      JSON Web Token, a compact signed token used for authentication and information exchange.
+3. Why do we hash passwords?
+      To protect user credentials; even if database is compromised, attackers cannot easily recover passwords.
+
+Intermediate
+
+1. Explain the difference between access token and refresh token.
+      Access token is short-lived and used to access protected resources. Refresh token is long-lived and used to obtain new access tokens without re-authentication.
+2. How do you store tokens securely?
+      Access token in memory (or short-lived in localStorage with caution). Refresh token in HTTP-only cookie with Secure and SameSite flags.
+3. What is token rotation?
+      Issuing a new refresh token each time one is used, and invalidating the old one. This reduces the window of misuse if a token is stolen.
+
+Advanced
+
+1. How do you implement refresh token rotation?
+      Store the refresh token in the database. On refresh, validate the provided token, generate a new one, update the database, and set the new cookie. This invalidates the old token.
+2. How do you prevent CSRF on the refresh endpoint?
+      Use SameSite=Strict cookies and/or a CSRF token (e.g., in a non-HttpOnly cookie and required in a custom header). Validate the origin of the request.
+3. Why is it important to use generic error messages on login?
+      To prevent user enumeration. If the API says "email not found" vs "incorrect password", attackers can determine which emails exist. A generic "Invalid credentials" prevents this.
+
+Scenario-Based
+
+Q: Your access token expires every 15 minutes. How do you keep the user logged in without prompting them to log in again?
+Answer: Use a refresh token stored in an HTTP-only cookie. When the access token expires, the frontend automatically calls the refresh endpoint to get a new access token, then retries the original request. This is done in an Axios interceptor.
+
+Coding Questions
+
+1. Write an Express route for user registration with password hashing.
+
+```javascript
+router.post('/register', async (req, res) => {
+  const { email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({ email, password: hashedPassword });
+  res.status(201).json({ id: user.id, email: user.email });
+});
+```
+
+2. Create an authentication middleware that verifies a JWT.
+
+```javascript
+function authenticate(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Token required' });
+  try {
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    req.user = payload;
+    next();
+  } catch {
+    res.status(403).json({ message: 'Invalid token' });
+  }
+}
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Storing plaintext passwords Hash with bcrypt/argon2
+Using long-lived access tokens Keep access token short (15 min)
+Not rotating refresh tokens Rotate on every refresh
+Storing refresh token in localStorage Use HTTP-only cookie
+Not implementing rate limiting Add rate limiter to login/register
+Returning specific error messages Use generic error messages
+Not using HTTPS Always use HTTPS
+Not revoking tokens on logout Store refresh token in DB and revoke
+Not validating input Validate email/password
+
+---
+
+This concludes Module 27: Authentication API. The next module will be Module 28: Connecting React Frontend to Backend, covering integration of React with the authentication API and other backend services, including CORS, Axios setup, token handling, and deployment considerations.
+
+Module 28: Connecting React Frontend to Backend
+
+Connecting a React frontend to a backend involves setting up communication between the client-side application and server-side APIs. This module covers the essential steps: configuring CORS, setting up an Axios instance with interceptors, handling authentication tokens, managing environment variables, integrating with React context, and ensuring smooth error and loading states. By the end, you will be able to connect a React SPA to a Node.js/Express backend securely and efficiently.
+
+---
+
+1. Definition
+
+1.1 What is Connecting React Frontend to Backend?
+
+Connecting React frontend to backend refers to the process of enabling a React single-page application (SPA) to communicate with a server-side application (typically a REST API built with Express, Django, etc.). This involves making HTTP requests from the frontend to backend endpoints, handling responses, and managing cross-cutting concerns like authentication, error handling, and data fetching.
+
+1.2 What Problem It Solves
+
+React apps are static frontends; they need data and services from a backend to be fully functional. Without a proper connection strategy, the frontend may suffer from CORS issues, inconsistent API calls, repeated authentication logic, and poor error handling. A structured approach centralizes API communication, handles tokens, and ensures a smooth user experience.
+
+1.3 Why It Was Introduced
+
+As single-page applications became popular, the separation between frontend and backend became standard. This required standardized ways to handle cross-origin requests, manage authentication tokens, and abstract API calls. Tools like Axios and patterns like interceptors emerged to simplify this integration.
+
+1.4 Where It Is Used
+
+· Web applications with separate frontend and backend.
+· Mobile apps consuming REST APIs.
+· Microservices with a BFF (Backend for Frontend).
+· Full-stack JavaScript applications (React + Node.js).
+
+1.5 When It Should Be Used
+
+· When building any React app that needs server-side data or authentication.
+· When you have multiple frontend clients (web, mobile) consuming the same backend.
+· When you want to centralize API logic and token management.
+
+1.6 When It Should Not Be Used
+
+· For purely static sites with no backend.
+· If you are using a framework like Next.js where backend and frontend are integrated (though you still connect to external APIs).
+· For very simple applications where direct fetch calls might suffice without abstraction.
+
+1.7 Relationship with Surrounding Concepts
+
+· CORS: security mechanism that allows cross-origin requests.
+· Axios: popular HTTP client for making requests.
+· JWT: token used for authentication.
+· React Context: for managing authentication state.
+· Environment variables: for API base URLs and configuration.
+· Express: backend framework often used.
+
+---
+
+2. Why Connecting React Frontend to Backend Exists
+
+2.1 The Problem Before
+
+Before the rise of SPAs, frontend and backend were often served together (server-rendered). As React SPAs became common, frontend was served separately from backend APIs, leading to cross-origin issues and the need for token-based authentication. Developers needed a way to reliably and securely communicate between the two.
+
+2.2 The Solution It Provides
+
+· CORS configuration: allows the frontend to make requests to a different origin.
+· Axios instance: provides a centralized HTTP client with interceptors for tokens and errors.
+· Token refresh: automatically handles expired access tokens.
+· Auth context: shares authentication state across the app.
+· Environment variables: manage API URLs per environment.
+
+2.3 What Happens If We Don't Use It?
+
+You would have to:
+
+· Manually set CORS headers (or face CORS errors).
+· Repeat fetch/axios logic in every component.
+· Manually attach tokens.
+· Handle refresh logic in multiple places.
+· Duplicate loading/error state management.
+
+This leads to bugs, security vulnerabilities, and maintainability issues.
+
+2.4 Alternatives
+
+· Use Fetch API directly with wrapper functions.
+· Use libraries like React Query or SWR for data fetching (they handle caching and loading).
+· Use GraphQL with Apollo Client (different approach).
+· Use a full-stack framework like Next.js that handles backend integration.
+
+2.5 Why Choose Axios + Interceptors?
+
+Axios provides a simple, promise-based API with interceptors that make it easy to handle authentication headers and token refresh globally. It works in both browser and Node.js, supports request cancellation, and has a large ecosystem. This pattern is widely adopted and understood.
+
+---
+
+3. Core Concepts
+
+3.1 CORS (Cross-Origin Resource Sharing)
+
+CORS is a browser security mechanism that allows a server to indicate which origins are permitted to load its resources. When the frontend and backend are on different origins (e.g., localhost:3000 and localhost:5000), the browser blocks requests unless the server includes appropriate CORS headers.
+
+Key headers:
+
+· Access-Control-Allow-Origin: specifies allowed origins (e.g., http://localhost:3000).
+· Access-Control-Allow-Methods: allowed HTTP methods.
+· Access-Control-Allow-Headers: allowed request headers.
+· Access-Control-Allow-Credentials: whether credentials (cookies) are allowed.
+
+3.2 API Base URL Configuration
+
+The frontend needs to know the backend's base URL. This is typically set in environment variables (VITE_API_URL for Vite, REACT_APP_API_URL for CRA). It allows different URLs for development, staging, and production.
+
+Example:
+
+```javascript
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+```
+
+3.3 Axios Instance
+
+Creating a dedicated Axios instance with a base URL, default headers, and interceptors centralizes API configuration. It avoids repeating base URL and header setup in every request.
+
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+});
+```
+
+3.4 Request Interceptor
+
+A request interceptor runs before each request is sent. It is used to attach authentication tokens (JWT) to the Authorization header.
+
+```javascript
+api.interceptors.request.use(
+  (config) => {
+    const accessToken = getAccessToken(); // from memory or storage
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+```
+
+3.5 Response Interceptor and Token Refresh
+
+A response interceptor runs after a response is received. It is used to handle global errors, especially 401 Unauthorized, by attempting to refresh the access token and retrying the request.
+
+```javascript
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const newAccessToken = await refreshAccessToken(); // calls /auth/refresh
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // logout or redirect
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+3.6 Authentication Context
+
+React Context is used to manage the authentication state (user, access token) and provide login/logout functions to components. It centralizes auth logic and makes it accessible anywhere.
+
+3.7 Environment Variables
+
+Environment variables store configuration like API base URL, which changes between environments. In Vite, variables prefixed with VITE_ are exposed to the client.
+
+3.8 Loading and Error States
+
+Proper handling of loading and error states ensures a good user experience. This involves setting state variables (loading, error) before and after API calls, and displaying appropriate UI.
+
+3.9 Same-Origin vs Cross-Origin
+
+If frontend and backend are served from the same origin (e.g., via Nginx proxy or Next.js), CORS is not needed. For separate origins, CORS must be configured.
+
+---
+
+4. Prerequisites
+
+· React and Express fundamentals.
+· Understanding of HTTP requests and responses.
+· Knowledge of JWT authentication (from Module 10 and 27).
+· Basic familiarity with Axios or Fetch API.
+
+---
+
+5. Internal Working / Architecture
+
+5.1 Typical Connection Flow
+
+```mermaid
+flowchart LR
+    React[React Component] --> API[Axios Instance]
+    API --> RequestInterceptor[Request Interceptor: add token]
+    RequestInterceptor --> Backend[Backend API]
+    Backend --> ResponseInterceptor[Response Interceptor: handle 401]
+    ResponseInterceptor -->|Retry with new token| Backend
+    ResponseInterceptor --> React
+```
+
+5.2 Token Refresh Flow
+
+1. Client makes a request with access token.
+2. Server responds 401 (expired).
+3. Response interceptor catches 401, calls refresh endpoint with refresh token (in HTTP-only cookie).
+4. Server issues new access token.
+5. Interceptor updates token and retries original request.
+6. Original request succeeds.
+
+5.3 Auth Context Flow
+
+· On login, AuthProvider calls login service, stores access token in memory and user in state.
+· On app load, attempt to restore session by calling refresh endpoint (using cookie).
+· Provide login, logout, user to components via context.
+
+5.4 CORS Preflight
+
+For requests with custom headers (e.g., Authorization), the browser sends an OPTIONS preflight request to check CORS headers. The backend must handle OPTIONS and return appropriate headers.
+
+---
+
+6. Syntax and Setup
+
+6.1 Backend CORS Configuration (Express)
+
+Install cors package:
+
+```bash
+npm install cors
+```
+
+Basic usage:
+
+```javascript
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000',
+  credentials: true, // allow cookies
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+```
+
+If using credentials (cookies), do not set origin to *; specify exact origin.
+
+6.2 Frontend Axios Instance
+
+Create src/services/api.js:
+
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // send cookies for refresh
+});
+
+// Request interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken'); // or from memory
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor for refresh
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {}, { withCredentials: true });
+        const newAccessToken = data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        processQueue(null, newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+```
+
+6.3 Auth Context Example
+
+Create src/context/AuthContext.jsx:
+
+```jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const res = await api.post('/auth/refresh', {});
+        const { accessToken, user } = res.data;
+        localStorage.setItem('accessToken', accessToken);
+        setUser(user);
+      } catch {
+        // not authenticated
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
+
+  const login = async (credentials) => {
+    const res = await api.post('/auth/login', credentials);
+    const { accessToken, user } = res.data;
+    localStorage.setItem('accessToken', accessToken);
+    setUser(user);
+  };
+
+  const logout = async () => {
+    await api.post('/auth/logout');
+    localStorage.removeItem('accessToken');
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);
+```
+
+6.4 Service Layer Functions
+
+Create src/services/userService.js:
+
+```javascript
+import api from './api';
+
+export const getUsers = () => api.get('/users');
+export const getUser = (id) => api.get(`/users/${id}`);
+export const createUser = (data) => api.post('/users', data);
+export const updateUser = (id, data) => api.put(`/users/${id}`, data);
+export const deleteUser = (id) => api.delete(`/users/${id}`);
+```
+
+6.5 Using in Components
+
+```jsx
+import { useState, useEffect } from 'react';
+import { getUsers } from '../services/userService';
+
+function UserList() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getUsers()
+      .then(res => setUsers(res.data))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+---
+
+7. Basic Example
+
+7.1 Simple Fetch from Backend
+
+Backend (Express):
+
+```javascript
+app.get('/api/message', (req, res) => {
+  res.json({ message: 'Hello from backend' });
+});
+```
+
+Frontend (React):
+
+```jsx
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/message')
+      .then(res => setMessage(res.data.message))
+      .catch(err => console.error(err));
+  }, []);
+
+  return <div>{message}</div>;
+}
+```
+
+This works if CORS is configured on backend.
+
+---
+
+8. Practical Example
+
+8.1 Login Form with Axios and Auth Context
+
+Login component:
+
+```jsx
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await login({ email, password });
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required />
+      <button type="submit">Login</button>
+      {error && <p>{error}</p>}
+    </form>
+  );
+}
+```
+
+8.2 Protected Route with Auth Context
+
+```jsx
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+function ProtectedRoute() {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
+```
+
+---
+
+9. Advanced Example
+
+9.1 Complete Integration with Token Refresh and Queue
+
+The Axios instance shown earlier with isRefreshing and failedQueue is the advanced pattern. It handles multiple simultaneous 401s by queuing requests and retrying them after refresh.
+
+9.2 Using Refresh Token Rotation
+
+Backend rotates refresh tokens (as in Module 27). The frontend must update cookies and possibly the stored refresh token if it's also kept in memory. The interceptor should handle the new refresh token automatically (cookies handled by browser).
+
+9.3 Environment-Specific Configuration
+
+Using .env.development and .env.production:
+
+.env.development:
+
+```
+VITE_API_URL=http://localhost:5000
+```
+
+.env.production:
+
+```
+VITE_API_URL=https://api.example.com
+```
+
+9.4 Handling Network Errors and Timeouts
+
+Add timeout and retry logic for network errors. Axios has timeout option. For retries, use a library like axios-retry or implement manually.
+
+```javascript
+import axiosRetry from 'axios-retry';
+
+axiosRetry(api, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
+```
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Building a Full-Stack Task Management App
+
+The frontend (React) needs to:
+
+· Authenticate users (login/register).
+· Fetch and manipulate tasks via REST API.
+· Handle token expiration gracefully.
+· Show loading and error states.
+
+The backend (Express + PostgreSQL) provides auth and task endpoints.
+
+10.2 Solution
+
+· Use Axios instance with interceptors for token management.
+· Use AuthContext for user state.
+· Use environment variables for API URL.
+· Configure CORS on backend.
+· Use service layer functions for API calls.
+· Implement loading/error states in components.
+
+10.3 Architecture
+
+```mermaid
+flowchart TD
+    React[React Frontend] --> AuthContext[AuthContext]
+    AuthContext --> Axios[Axios Instance]
+    Axios -->|Request| RequestInterceptor[Add Token]
+    Axios -->|Response| ResponseInterceptor[Handle 401]
+    ResponseInterceptor -->|Refresh| RefreshEndpoint
+    Axios -->|API Calls| Backend[Express API]
+    Backend --> DB[(PostgreSQL)]
+```
+
+10.4 Implementation Highlights
+
+· Backend CORS config.
+· Axios instance with refresh queue.
+· AuthProvider that restores session on load.
+· Protected routes.
+· Service functions for tasks.
+· Error handling and user feedback.
+
+---
+
+11. Common Mistakes
+
+1. Not configuring CORS properly – especially with credentials; using * with credentials fails.
+2. Storing access token in localStorage – vulnerable to XSS; prefer memory (but then how to persist? Use refresh cookie).
+3. Not handling token refresh – user gets logged out when token expires.
+4. Creating new Axios instance in components – loses interceptors and config.
+5. Not using environment variables – hardcoding API URLs.
+6. Not handling loading/error states – poor UX.
+7. Ignoring network errors – need to catch and show message.
+8. Not setting withCredentials: true when using cookies for refresh.
+9. Not implementing CSRF protection for cookie-based refresh.
+10. Overfetching/underfetching – no pagination, too many fields.
+11. Not centralizing API calls – scattering axios calls.
+12. Not handling concurrent refresh – may cause multiple refresh calls.
+13. Using fetch without checking response.ok – errors not caught properly.
+14. Not testing integration – regressions.
+
+---
+
+12. Best Practices
+
+· Use a single Axios instance with interceptors.
+· Store access token in memory (or short-lived in localStorage if necessary) and refresh token in HTTP-only cookie.
+· Implement token refresh with queue to handle concurrency.
+· Use AuthContext for user state.
+· Use environment variables for API base URL.
+· Use service layer for API functions.
+· Handle loading and error states consistently.
+· Validate responses and handle errors gracefully.
+· Use withCredentials: true if using cookies.
+· Configure CORS with specific origin and credentials.
+· Implement CSRF protection for refresh.
+· Use HTTPS in production.
+· Test with MSW or mock server.
+· Document API integration.
+
+---
+
+13. Security
+
+· CORS: restrict origins; don't use * with credentials.
+· Token storage: access token in memory, refresh token in HTTP-only cookie.
+· JWT security: short expiry, strong secrets.
+· CSRF: SameSite cookies, CSRF tokens.
+· Input validation: validate on server (and client).
+· Error handling: don't expose stack traces; generic messages.
+· HTTPS: always.
+· Rate limiting: on backend.
+· Content Security Policy (CSP): restrict script sources.
+· Avoid storing secrets in frontend env variables.
+
+---
+
+14. Performance and Scalability
+
+· Caching: use HTTP caching, React Query/SWR for data caching.
+· Pagination: paginate API responses.
+· Compression: enable gzip on server.
+· Code splitting: lazy load components.
+· Connection pooling: backend DB pooling.
+· Horizontal scaling: stateless backend; frontend served via CDN.
+· Use AbortController for request cancellation to avoid memory leaks.
+· Debounce/throttle user input for search.
+
+---
+
+15. Testing
+
+· Unit tests: service functions with mocked Axios.
+· Component tests: using React Testing Library and MSW.
+· Integration tests: simulate API calls and auth flow.
+· Test token refresh: mock 401 and refresh response.
+· Use jest.mock('axios') or MSW.
+· Test loading and error states.
+
+Example: MSW handler for auth refresh
+
+```javascript
+import { rest } from 'msw';
+import { server } from './mocks/server';
+
+server.use(
+  rest.post('/auth/refresh', (req, res, ctx) => {
+    return res(ctx.json({ accessToken: 'new-token', user: { id: 1, email: 'test@example.com' } }));
+  })
+);
+```
+
+---
+
+16. Comparison: Fetch vs Axios for Backend Connection
+
+Feature Fetch Axios
+JSON parsing Manual (res.json()) Automatic
+Error handling Rejects only on network error; HTTP errors need manual check Rejects on non-2xx
+Interceptors No Yes (request/response)
+Timeout Manual via AbortController Built-in
+Cancellation AbortController AbortController / CancelToken (deprecated)
+Progress events No Yes (download/upload)
+Node.js support Node 18+ (experimental) Native
+Browser support Modern browsers All
+Community Native Popular library
+
+For complex applications with auth and interceptors, Axios is often preferred. Fetch can be used for simple requests.
+
+---
+
+17. Quick Revision
+
+· Configure CORS on backend; use specific origin if credentials needed.
+· Create Axios instance with base URL from environment variable.
+· Add request interceptor to attach access token.
+· Add response interceptor to refresh token on 401.
+· Use AuthContext to manage user state and login/logout.
+· Use service layer for API calls.
+· Handle loading/error states.
+· Use withCredentials: true for cookie refresh.
+· Implement queue for concurrent refresh.
+· Test with MSW.
+
+---
+
+18. Interview Questions – Module 28
+
+Beginner
+
+1. How do you connect a React frontend to a backend API?
+      Use an HTTP client like Axios, make requests to backend endpoints, handle responses, and manage CORS.
+2. What is CORS and why is it needed?
+      CORS is a browser security feature that allows servers to specify which origins can access resources. It's needed when frontend and backend are on different origins.
+3. What is an Axios interceptor?
+      A function that runs before a request is sent or after a response is received, used to attach headers or handle errors.
+
+Intermediate
+
+1. Explain how you handle token refresh in a React app.
+      Use a response interceptor to detect 401 errors. Attempt to refresh the token via a refresh endpoint, then retry the original request. Implement a queue to handle multiple simultaneous 401s.
+2. How do you centralize API calls in React?
+      Create a service layer with functions for each API endpoint, using a shared Axios instance. This avoids repetition and makes it easy to manage configuration and interceptors.
+3. What is the purpose of an AuthContext?
+      It provides authentication state (user, login, logout) to all components via React Context, avoiding prop drilling and centralizing auth logic.
+
+Advanced
+
+1. How do you handle concurrent 401 responses during token refresh?
+      Use an isRefreshing flag and a queue of pending requests. While refreshing, other 401 requests are added to the queue. After refresh, the queue is resolved with the new token, and all requests are retried.
+2. What are the security implications of storing tokens in localStorage vs memory?
+      localStorage is accessible to JavaScript, so XSS can steal tokens. Memory is safe from XSS but lost on refresh. The recommended approach is access token in memory and refresh token in HTTP-only cookie.
+3. How would you set up CORS for a React frontend and Express backend?
+      Use the cors middleware with origin set to the frontend URL, credentials: true if using cookies, and appropriate methods/allowedHeaders. Avoid * when using credentials.
+
+Scenario-Based
+
+Q: Your API requests fail due to CORS. How do you fix it?
+Answer: On the backend, add CORS headers. In Express, use the cors middleware with origin set to the frontend origin. If using cookies, set credentials: true and specify the exact origin, not *. Also handle preflight OPTIONS requests.
+
+Coding Questions
+
+1. Write an Axios instance with a request interceptor that adds an access token from localStorage.
+
+```javascript
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL });
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('accessToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+```
+
+2. Show a simple component that fetches and displays a list of users using a service function.
+
+```jsx
+import { useState, useEffect } from 'react';
+import { getUsers } from '../services/userService';
+
+function Users() {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    getUsers().then(res => setUsers(res.data));
+  }, []);
+  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+CORS misconfiguration Use cors with specific origin, credentials
+Storing access token in localStorage Keep in memory, use refresh cookie
+Not handling token refresh Implement interceptor with queue
+Scattering axios calls Use service layer
+Hardcoding API URLs Use environment variables
+Ignoring loading/error states Always handle
+Not using withCredentials Set when using cookies
+Not handling concurrent refresh Use queue
+Not testing integration Use MSW/mocks
+
+---
+
+This concludes Module 28: Connecting React Frontend to Backend. The next module will be Module 29: Deployment of Full-Stack Applications, covering deploying both frontend and backend, server configuration, environment variables in production, and CI/CD.## Module 29: Deployment of Full-Stack Applications
+
+Deploying a full-stack application involves making both the frontend (React) and backend (Node.js/Express) available to users in a production environment. This module covers strategies for deploying full-stack apps, including serving frontend and backend separately or together, environment configuration, process management, database deployment, and CI/CD pipelines. You will learn how to deploy a React frontend and an Express backend to popular platforms (Vercel/Netlify for frontend, Render/Heroku/VPS for backend) and how to configure production settings.
+
+---
+
+1. Definition
+
+1.1 What is Deployment of Full-Stack Applications?
+
+Deployment of full-stack applications refers to the process of building, configuring, and hosting both the frontend and backend components of a web application in a production environment. This includes serving static files (React build), running the backend server (Node.js/Express), connecting to a production database, and configuring environment variables, security, and scaling.
+
+1.2 What Problem It Solves
+
+Development environments are not suitable for end users. Deployment ensures the application is optimized, secure, and accessible over the internet. It handles concerns like HTTPS, domain configuration, process management, and environment-specific settings, enabling reliable access for users.
+
+1.3 Why It Was Introduced
+
+As applications moved from monolithic server-rendered to separate frontend/backend architectures, deployment strategies evolved to handle two independent components. Tools and platforms emerged to simplify hosting static frontends and scalable backend services.
+
+1.4 Where It Is Used
+
+· Web applications with React frontend and Node.js backend.
+· Microservices architectures with multiple backend services.
+· Serverless deployments for frontend and backend functions.
+· Containerized applications using Docker and Kubernetes.
+
+1.5 When It Should Be Used
+
+· When the application is ready for production.
+· When you need to make the app accessible to end users.
+· When you need to automate deployment with CI/CD.
+· When scaling and high availability are required.
+
+1.6 When It Should Not Be Used
+
+· During local development (use development server).
+· If the application is only for internal testing and not public.
+· If you are just prototyping and don't need production deployment.
+
+1.7 Relationship with Surrounding Concepts
+
+· Environment variables: production configuration.
+· Nginx: reverse proxy and static file serving.
+· PM2: process manager for Node.js.
+· Docker: containerization for consistent deployment.
+· CI/CD: automated build, test, and deploy.
+· Database hosting: MongoDB Atlas, PostgreSQL (Render, AWS RDS).
+
+---
+
+2. Why Deployment of Full-Stack Applications Exists
+
+2.1 The Problem Before
+
+Before modern deployment platforms, developers had to manually configure servers, set up reverse proxies, manage SSL certificates, and ensure processes stayed running. This was time-consuming, error-prone, and required deep system administration knowledge. Full-stack applications with separate frontend and backend added complexity.
+
+2.2 The Solution It Provides
+
+Modern deployment platforms and tools abstract away much of the complexity:
+
+· Static hosting (Netlify, Vercel) for React frontend.
+· Backend PaaS (Render, Heroku, Railway) for Node.js/Express.
+· Managed databases (MongoDB Atlas, AWS RDS).
+· Containerization (Docker) for consistency.
+· CI/CD to automate the entire pipeline.
+
+These allow developers to focus on code, while infrastructure is managed.
+
+2.3 What Happens If We Don't Use It?
+
+Users cannot access the application. Without proper deployment, the app remains local. Inefficient deployment can lead to security vulnerabilities, downtime, and poor performance.
+
+2.4 Alternatives
+
+· Traditional VPS with manual setup.
+· On-premises servers.
+· Serverless functions (AWS Lambda, Vercel Functions).
+· Kubernetes for large-scale orchestration.
+
+2.5 Why Choose Modern PaaS?
+
+· Simplicity and speed.
+· Automatic scaling.
+· Built-in SSL.
+· Integrated CI/CD.
+· Cost-effective for small to medium apps.
+
+---
+
+3. Core Concepts
+
+3.1 Frontend Deployment
+
+React build output (dist/ or build/) is static. It can be deployed to:
+
+· Static hosting: Netlify, Vercel, GitHub Pages, AWS S3 + CloudFront.
+· VPS with Nginx: serve static files.
+· Docker container: with Nginx.
+
+Key configuration: SPA routing (redirect all to index.html), environment variables (API URL), caching.
+
+3.2 Backend Deployment
+
+Express backend needs a Node.js environment. Options:
+
+· PaaS: Render, Heroku, Railway, Fly.io.
+· VPS: install Node.js, use PM2.
+· Docker: containerize and run in any environment.
+
+Key configuration: environment variables (database URL, secrets), process management, health checks.
+
+3.3 Database Deployment
+
+· MongoDB Atlas: managed MongoDB.
+· PostgreSQL: Render, AWS RDS, Supabase.
+· Ensure connection string is stored in backend environment variables.
+
+3.4 Environment Variables in Production
+
+· Use platform-specific environment variable settings.
+· Keep secrets secure; never commit.
+· Configure frontend environment variables at build time (for static hosting) or use runtime config (if needed).
+
+3.5 CORS in Production
+
+Set FRONTEND_ORIGIN to the production frontend URL. Backend should only allow that origin.
+
+3.6 HTTPS
+
+· Static hosting platforms provide automatic HTTPS.
+· For VPS, use Let's Encrypt (Certbot) with Nginx.
+· Backend API should also be HTTPS (via reverse proxy or platform).
+
+3.7 Process Management
+
+· Use PM2 for VPS to keep backend alive.
+· PaaS handles process management automatically.
+
+3.8 CI/CD
+
+Automate build, test, and deploy using GitHub Actions or platform-integrated pipelines.
+
+---
+
+4. Prerequisites
+
+· Completed frontend and backend code.
+· Accounts on deployment platforms (Netlify, Render, etc.).
+· Basic understanding of environment variables and build processes.
+· Git repository for CI/CD.
+
+---
+
+5. Internal Working / Architecture
+
+5.1 Deployment Architecture Options
+
+Option 1: Separate hosting
+
+```mermaid
+flowchart LR
+    Frontend[Frontend on Netlify/Vercel] -->|API Calls| Backend[Backend on Render/VPS]
+    Backend --> Database[(Database)]
+```
+
+Option 2: Same server with reverse proxy
+
+```mermaid
+flowchart LR
+    Client[Browser] --> Nginx[Nginx on VPS]
+    Nginx -->|/| Frontend[React Static Files]
+    Nginx -->|/api| Backend[Express on localhost:3000]
+    Backend --> Database[(Database)]
+```
+
+Option 3: Docker Compose
+
+```mermaid
+flowchart LR
+    Client --> NginxContainer[Nginx Container]
+    NginxContainer --> FrontendContainer[Frontend Container]
+    NginxContainer --> BackendContainer[Backend Container]
+    BackendContainer --> DBContainer[Database Container]
+```
+
+5.2 Request Flow in Separate Hosting
+
+1. User requests frontend URL.
+2. Static hosting serves React app.
+3. React app makes API calls to backend URL.
+4. Backend processes request, queries database, returns response.
+
+5.3 Environment Configuration Flow
+
+· Frontend build uses VITE_API_URL pointing to backend URL.
+· Backend uses DATABASE_URL, ACCESS_TOKEN_SECRET, etc.
+· These are set in platform environment settings.
+
+---
+
+6. Syntax and Setup
+
+6.1 Backend Deployment to Render (Example)
+
+· Push code to GitHub.
+· Create a new Web Service on Render.
+· Connect repository, set build command: npm install && npm run build (if build needed), start command: npm start.
+· Add environment variables: DATABASE_URL, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, FRONTEND_ORIGIN, NODE_ENV=production.
+· Render provides HTTPS and process management.
+
+6.2 Frontend Deployment to Netlify
+
+· Build command: npm run build.
+· Publish directory: dist (Vite) or build (CRA).
+· Add environment variable: VITE_API_URL set to backend URL.
+· Configure redirects for SPA: create _redirects file with /* /index.html 200 or use netlify.toml.
+
+netlify.toml:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+6.3 CORS Configuration for Production
+
+Backend cors options:
+
+```javascript
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+}));
+```
+
+Set FRONTEND_ORIGIN=https://your-app.netlify.app in production.
+
+6.4 VPS Deployment with Nginx and PM2
+
+· Build frontend locally or on server, copy to /var/www/html.
+· Configure Nginx:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+· Start backend with PM2:
+
+```bash
+pm2 start server.js --name backend
+pm2 save
+pm2 startup
+```
+
+6.5 Environment Variables with .env files
+
+Create .env.production for frontend and .env for backend (or use platform env settings).
+
+Backend .env (production):
+
+```
+DATABASE_URL=postgres://...
+ACCESS_TOKEN_SECRET=...
+REFRESH_TOKEN_SECRET=...
+FRONTEND_ORIGIN=https://frontend.example.com
+PORT=5000
+```
+
+Frontend .env.production:
+
+```
+VITE_API_URL=https://backend.example.com
+```
+
+---
+
+7. Basic Example
+
+7.1 Deploying Frontend to Vercel
+
+1. Push React app to GitHub.
+2. Import repository to Vercel.
+3. Set build command npm run build, output directory dist.
+4. Add environment variable VITE_API_URL.
+5. Deploy.
+
+7.2 Deploying Backend to Heroku (legacy but still used)
+
+1. Create Procfile with web: npm start.
+2. Set environment variables in Heroku dashboard.
+3. Push to Heroku.
+
+---
+
+8. Practical Example
+
+8.1 Full-Stack Deployment with GitHub Actions
+
+Workflow: Deploy frontend to Netlify and backend to Render on push to main
+
+```yaml
+name: Deploy Full Stack
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install frontend deps
+        working-directory: ./frontend
+        run: npm ci
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './frontend/dist'
+          production-deploy: true
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+```
+
+---
+
+9. Advanced Example
+
+9.1 Docker Compose for Full-Stack Deployment
+
+Create docker-compose.yml to run frontend (Nginx), backend, and database together.
+
+Dockerfile for backend:
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 5000
+CMD ["node", "server.js"]
+```
+
+Dockerfile for frontend (multi-stage):
+
+```dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+docker-compose.yml:
+
+```yaml
+version: '3'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    environment:
+      - DATABASE_URL=mongodb://db:27017/myapp
+      - ACCESS_TOKEN_SECRET=...
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+  db:
+    image: mongo:6
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:
+```
+
+This runs the entire stack in containers, easy to deploy to any Docker host or Kubernetes.
+
+9.2 Using Kubernetes for Scaling
+
+For large-scale, use Kubernetes with deployments and services for frontend, backend, and database. Helm charts or Kustomize manage configurations. This is beyond the scope but worth knowing.
+
+---
+
+10. Real-World Scenario
+
+10.1 Problem: Deploying a Production-Ready E-Commerce App
+
+The app has:
+
+· React frontend with product listing, cart, checkout.
+· Express backend with authentication, product, order APIs.
+· MongoDB database.
+· Need HTTPS, scaling, and automated deployments.
+
+10.2 Solution
+
+· Deploy frontend to Vercel (static) with environment variable VITE_API_URL.
+· Deploy backend to Render (Node.js) with environment variables for database and secrets.
+· Use MongoDB Atlas for database.
+· Configure CORS with FRONTEND_ORIGIN set to Vercel URL.
+· Use GitHub Actions to build and deploy both on push to main.
+· Configure custom domain and HTTPS automatically.
+
+10.3 Architecture
+
+```mermaid
+flowchart LR
+    User[User] -->|HTTPS| Frontend[Vercel - React]
+    Frontend -->|API Calls| Backend[Render - Express]
+    Backend -->|Mongoose| Database[(MongoDB Atlas)]
+    Backend -->|CORS| Frontend
+```
+
+10.4 Implementation Highlights
+
+· Frontend .env.production has VITE_API_URL=https://backend.onrender.com.
+· Backend cors origin set to https://frontend.vercel.app.
+· Backend uses dotenv and production env vars.
+· Render runs npm start with PM2 internally.
+· CI/CD pipeline builds frontend, deploys to Vercel; deploys backend to Render via API.
+· Database connection string stored in Render env.
+
+---
+
+11. Common Mistakes
+
+1. Not setting environment variables correctly – frontend build uses wrong API URL.
+2. CORS misconfiguration – origin not set or * with credentials.
+3. Forgetting SPA routing redirects – 404 on deep links.
+4. Hardcoding secrets in code – should use environment variables.
+5. Not using HTTPS – mixed content or security warnings.
+6. Not setting NODE_ENV=production – affects performance and security.
+7. Not handling process management – backend goes down if not using PM2/Paas.
+8. Ignoring database backups – data loss risk.
+9. Not monitoring logs – can't diagnose issues.
+10. Using development server (Vite dev) in production – not optimized.
+
+---
+
+12. Best Practices
+
+· Use environment variables for all configuration.
+· Set CORS to specific frontend origin.
+· Always use HTTPS (platforms provide).
+· Use SPA redirects on static hosting.
+· Use process manager (PM2) for VPS, or PaaS.
+· Use managed databases with backups.
+· Implement CI/CD for automated deployment.
+· Use Docker for consistent environments.
+· Monitor and log errors (Sentry, LogRocket, etc.).
+· Use npm ci in CI/CD for deterministic installs.
+· Keep secrets out of repository; use platform secrets.
+· Test before deploy; run integration tests.
+· Use health checks for backend.
+· Set cache headers for static assets.
+
+---
+
+13. Security
+
+· HTTPS: always.
+· CORS: restrict origins.
+· Environment variables: keep secrets out of code; use platform secret management.
+· Helmet: secure HTTP headers on backend.
+· Rate limiting: protect against abuse.
+· Input validation: on both frontend and backend.
+· Database security: use strong passwords, network restrictions, encryption.
+· Token storage: same as earlier modules.
+· Regular updates: keep dependencies patched.
+· Audit logs: monitor authentication events.
+
+---
+
+14. Performance and Scalability
+
+· CDN for frontend: static hosting platforms provide CDN.
+· Compression: enable gzip/brotli.
+· Caching: set cache headers for static assets; use Redis for API caching.
+· Database indexing: ensure indexes for frequent queries.
+· Connection pooling: for databases.
+· Horizontal scaling: backend can scale by adding instances (PaaS autoscaling, Docker replicas).
+· Load balancing: via platform or Nginx.
+· Use HTTP/2: platform default.
+
+---
+
+15. Testing
+
+· CI/CD tests: run unit and integration tests before deploy.
+· Smoke tests after deploy: check critical endpoints and frontend loading.
+· Environment testing: verify API URL and CORS in staging.
+· Use Postman/Newman for API smoke tests.
+· Use Cypress for E2E tests in CI.
+· Test SPA routing on static host (no 404).
+
+---
+
+16. Comparison: Deployment Platforms
+
+Platform Frontend Backend Database Notes
+Vercel Excellent Serverless functions Managed (Postgres) Best for Next.js but works for React
+Netlify Excellent Serverless functions Managed (Fauna) Popular static host
+Render Static Web services PostgreSQL Free tier, easy
+Railway Static Web services PostgreSQL/MySQL Simple pricing
+Heroku Not primary Web services Add-ons Legacy, still used
+AWS S3+CloudFront EC2/ECS/Lambda RDS More control, complex
+
+---
+
+17. Quick Revision
+
+· Deploy frontend to static hosting; backend to PaaS/VPS.
+· Configure environment variables per environment.
+· Set CORS with frontend origin.
+· Use SPA redirects on frontend host.
+· Use process manager (PM2) or PaaS.
+· Use managed database.
+· Automate with CI/CD (GitHub Actions).
+· Use HTTPS.
+· Test after deploy.
+
+---
+
+18. Interview Questions – Module 29
+
+Beginner
+
+1. How do you deploy a React app?
+      Build it with npm run build, then deploy the static files to a hosting service like Netlify or Vercel, or serve with Nginx.
+2. What is CORS and how do you configure it for production?
+      CORS allows cross-origin requests. Configure the backend to allow the frontend origin, e.g., cors({ origin: 'https://frontend.com' }).
+3. What is PM2?
+      PM2 is a process manager for Node.js that keeps applications running, handles restarts, and provides monitoring.
+
+Intermediate
+
+1. Explain how you would deploy a full-stack React/Express app.
+      Deploy frontend static files to Netlify/Vercel, backend to Render/VPS, connect to a managed database, configure environment variables, set CORS, and use CI/CD for automation.
+2. How do you handle SPA routing on a static host?
+      Configure the host to redirect all requests to index.html. For Netlify, use _redirects; for Nginx, try_files $uri $uri/ /index.html;.
+3. What are the benefits of using Docker for deployment?
+      Docker ensures consistent environments, simplifies dependencies, and enables easy scaling with orchestration. It packages the app and its dependencies into a portable container.
+
+Advanced
+
+1. How would you set up a CI/CD pipeline for a full-stack app?
+      Use GitHub Actions. On push to main, run tests, build frontend and backend, deploy frontend to Netlify and backend to Render, and run smoke tests. Store secrets in GitHub secrets.
+2. What is the difference between deploying frontend and backend separately vs together?
+      Separately allows independent scaling and deployment, uses static hosting for frontend, and is simpler. Together (same server) reduces cross-origin issues but couples them. Modern approach is separate with proper CORS.
+3. How do you manage environment variables in production?
+      Use platform settings (Render, Netlify) or .env files on server. Never commit secrets. For frontend, variables are baked at build time; for backend, loaded at runtime.
+
+Scenario-Based
+
+Q: Your app works locally but fails after deployment due to CORS. How do you fix?
+Answer: Check the backend CORS configuration; ensure the production frontend origin is allowed. Set FRONTEND_ORIGIN env var and update cors to use it. Also verify that requests are sent to the correct backend URL and not mixed content (HTTP vs HTTPS).
+
+Coding Questions
+
+1. Write a basic Nginx config to serve React and proxy API to Express.
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+    root /var/www/html;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+    }
+}
+```
+
+2. Show a GitHub Actions workflow that deploys a React frontend to Netlify.
+
+```yaml
+name: Deploy Frontend
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - uses: nwtgck/actions-netlify@v2
+        with:
+          publish-dir: './dist'
+          production-deploy: true
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+```
+
+---
+
+19. Common Mistakes & Best Practices Summary
+
+Mistake Best Practice
+Hardcoding secrets Use environment variables and platform secrets
+Not setting CORS origin Configure specific frontend origin
+Forgetting SPA redirects Add redirect rule for client-side routing
+Using dev server in production Always build and serve static files
+Not using process manager Use PM2 or PaaS
+Not configuring database backup Enable managed backups
+Ignoring HTTPS Always use HTTPS
+Not using CI/CD Automate deploy pipeline
+Not testing after deploy Run smoke tests
+Not monitoring Add logging and error tracking
+
+---
+
+This concludes Module 29: Deployment of Full-Stack Applications. The next module will be Module 30: Final Project – Full-Stack Task Management Application, which will guide you through building a complete project integrating all concepts from this handbook, with detailed steps and code examples.
+
+Module 30: Final Project – Full-Stack Task Management Application
+
+This capstone module integrates all concepts from the entire handbook. You will build a complete full-stack task management application with React (frontend) and Node.js/Express/MongoDB (backend). The project includes authentication (JWT with refresh tokens), CRUD operations for tasks, user-specific data, protected routes, state management (Redux Toolkit), API integration (Axios with interceptors), responsive design (Tailwind CSS), testing, and deployment. By completing this project, you will demonstrate mastery of full-stack development.
+
+---
+
+1. Project Overview
+
+1.1 Definition
+
+A task management application (like a simplified Trello or Todoist) allows users to create, read, update, delete, and organize tasks. Users can register, log in, and manage their own tasks. It includes filtering, sorting, and status updates. The app demonstrates the end-to-end flow from frontend to backend to database.
+
+1.2 Why This Project
+
+It is a common real-world application that covers all essential full-stack concepts: authentication, CRUD, routing, state management, API integration, security, and deployment. It is an ideal portfolio piece.
+
+1.3 Purpose
+
+· Solidify full-stack development skills.
+· Practice architecture design.
+· Implement secure authentication.
+· Integrate React with Express and MongoDB.
+· Deploy a production-ready application.
+
+1.4 Prerequisites
+
+· Modules 00-29 of this handbook.
+· Familiarity with Git, GitHub, and deployment platforms.
+
+---
+
+2. Requirements
+
+2.1 Functional Requirements
+
+· User Authentication:
+  · Register with email, password, name.
+  · Login with email/password.
+  · Logout.
+  · Protected routes (dashboard).
+  · Refresh token for persistent session.
+· Task Management:
+  · Create task (title, description, due date, priority, status).
+  · Read tasks (list, filter by status, sort).
+  · Update task (edit fields, mark complete/incomplete).
+  · Delete task.
+  · User can only access their own tasks.
+· UI/UX:
+  · Responsive design.
+  · Loading and error states.
+  · Forms with validation.
+  · Navigation bar.
+
+2.2 Technical Requirements
+
+· Frontend: React, Redux Toolkit, React Router, Axios, Tailwind CSS.
+· Backend: Node.js, Express, MongoDB, Mongoose, JWT, bcrypt.
+· Database: MongoDB (local or Atlas).
+· Deployment: Frontend on Netlify/Vercel, backend on Render, database on MongoDB Atlas.
+· Testing: Jest, React Testing Library, Supertest (at least basic tests).
+
+---
+
+3. Architecture
+
+3.1 High-Level Architecture
+
+```mermaid
+flowchart LR
+    Client[React Frontend] -->|REST API| Backend[Express API]
+    Backend -->|JWT Auth| AuthService[Auth Service]
+    Backend -->|Task CRUD| TaskService[Task Service]
+    Backend -->|Mongoose| Database[(MongoDB)]
+    Client -->|Redux| Store[Redux Store]
+    Store -->|Axios| Backend
+```
+
+3.2 Folder Structure (Frontend)
+
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── store.js
+│   │   └── router.jsx
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── authSlice.js
+│   │   │   ├── authAPI.js
+│   │   │   └── components/
+│   │   └── tasks/
+│   │       ├── tasksSlice.js
+│   │       ├── tasksAPI.js
+│   │       └── components/
+│   ├── shared/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── utils/
+│   ├── services/
+│   │   └── api.js
+│   ├── App.jsx
+│   └── main.jsx
+├── .env.development
+├── .env.production
+└── package.json
+```
+
+3.3 Folder Structure (Backend)
+
+```
+backend/
+├── controllers/
+│   ├── authController.js
+│   └── tasksController.js
+├── middleware/
+│   ├── authMiddleware.js
+│   └── errorHandler.js
+├── models/
+│   ├── User.js
+│   └── Task.js
+├── routes/
+│   ├── authRoutes.js
+│   └── taskRoutes.js
+├── services/
+│   ├── authService.js
+│   └── taskService.js
+├── config/
+│   └── db.js
+├── .env
+├── app.js
+├── server.js
+└── package.json
+```
+
+---
+
+4. Database Design
+
+4.1 User Model
+
+```javascript
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  refreshToken: { type: String, default: null },
+  createdAt: { type: Date, default: Date.now },
+});
+```
+
+4.2 Task Model
+
+```javascript
+const taskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
+  priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+  dueDate: { type: Date },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+```
+
+---
+
+5. Backend Implementation
+
+5.1 Environment Variables (.env)
+
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/taskapp
+ACCESS_TOKEN_SECRET=your_access_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
+FRONTEND_ORIGIN=http://localhost:3000
+```
+
+5.2 Database Connection (config/db.js)
+
+```javascript
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+```
+
+5.3 Auth Controller (controllers/authController.js)
+
+```javascript
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const generateAccessToken = (user) => {
+  return jwt.sign({ userId: user._id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+};
+
+const generateRefreshToken = (user) => {
+  return jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+};
+
+exports.register = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(409).json({ message: 'Email already exists' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hashedPassword });
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(201).json({ accessToken, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.json({ accessToken, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.refresh = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: 'No refresh token' });
+
+    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(payload.userId);
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.json({ accessToken });
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid refresh token' });
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      const user = await User.findOne({ refreshToken });
+      if (user) {
+        user.refreshToken = null;
+        await user.save();
+      }
+    }
+    res.clearCookie('refreshToken');
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+```
+
+5.4 Auth Middleware (middleware/authMiddleware.js)
+
+```javascript
+const jwt = require('jsonwebtoken');
+
+exports.authenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    req.userId = payload.userId;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid or expired token' });
+  }
+};
+```
+
+5.5 Task Controller (controllers/tasksController.js)
+
+```javascript
+const Task = require('../models/Task');
+
+exports.getTasks = async (req, res, next) => {
+  try {
+    const tasks = await Task.find({ user: req.userId }).sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createTask = async (req, res, next) => {
+  try {
+    const { title, description, status, priority, dueDate } = req.body;
+    const task = await Task.create({ title, description, status, priority, dueDate, user: req.userId });
+    res.status(201).json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateTask = async (req, res, next) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, user: req.userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    res.json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteTask = async (req, res, next) => {
+  try {
+    const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.userId });
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+```
+
+5.6 Routes
+
+```javascript
+// routes/taskRoutes.js
+const router = require('express').Router();
+const { authenticate } = require('../middleware/authMiddleware');
+const tasksController = require('../controllers/tasksController');
+
+router.use(authenticate);
+router.get('/', tasksController.getTasks);
+router.post('/', tasksController.createTask);
+router.put('/:id', tasksController.updateTask);
+router.delete('/:id', tasksController.deleteTask);
+
+module.exports = router;
+```
+
+5.7 App Setup (app.js)
+
+```javascript
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
+
+const app = express();
+
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN, credentials: true }));
+app.use(express.json());
+app.use(cookieParser());
+
+app.use('/auth', require('./routes/authRoutes'));
+app.use('/tasks', require('./routes/taskRoutes'));
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+});
+
+module.exports = app;
+```
+
+---
+
+6. Frontend Implementation
+
+6.1 Environment Variables (.env.development)
+
+```
+VITE_API_URL=http://localhost:5000
+```
+
+6.2 Axios Instance with Interceptors (services/api.js)
+
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+});
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('accessToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {}, { withCredentials: true });
+        const newAccessToken = data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        processQueue(null, newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+```
+
+6.3 Auth Context (context/AuthContext.jsx)
+
+```jsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const res = await api.post('/auth/refresh');
+        localStorage.setItem('accessToken', res.data.accessToken);
+        const userRes = await api.get('/auth/me');
+        setUser(userRes.data.user);
+      } catch {
+        // not logged in
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
+
+  const login = async (credentials) => {
+    const res = await api.post('/auth/login', credentials);
+    localStorage.setItem('accessToken', res.data.accessToken);
+    setUser(res.data.user);
+  };
+
+  const register = async (userData) => {
+    const res = await api.post('/auth/register', userData);
+    localStorage.setItem('accessToken', res.data.accessToken);
+    setUser(res.data.user);
+  };
+
+  const logout = async () => {
+    await api.post('/auth/logout');
+    localStorage.removeItem('accessToken');
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);
+```
+
+6.4 Task Slice (features/tasks/tasksSlice.js)
+
+```javascript
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../services/api';
+
+export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
+  const response = await api.get('/tasks');
+  return response.data;
+});
+
+export const createTask = createAsyncThunk('tasks/createTask', async (taskData) => {
+  const response = await api.post('/tasks', taskData);
+  return response.data;
+});
+
+export const updateTask = createAsyncThunk('tasks/updateTask', async ({ id, updates }) => {
+  const response = await api.put(`/tasks/${id}`, updates);
+  return response.data;
+});
+
+export const deleteTask = createAsyncThunk('tasks/deleteTask', async (id) => {
+  await api.delete(`/tasks/${id}`);
+  return id;
+});
+
+const tasksSlice = createSlice({
+  name: 'tasks',
+  initialState: { items: [], status: 'idle', error: null },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTasks.pending, (state) => { state.status = 'loading'; })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.items = action.payload;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      .addCase(createTask.fulfilled, (state, action) => {
+        state.items.unshift(action.payload);
+      })
+      .addCase(updateTask.fulfilled, (state, action) => {
+        const index = state.items.findIndex(t => t._id === action.payload._id);
+        if (index !== -1) state.items[index] = action.payload;
+      })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.items = state.items.filter(t => t._id !== action.payload);
+      });
+  },
+});
+
+export default tasksSlice.reducer;
+```
+
+6.5 Store (app/store.js)
+
+```javascript
+import { configureStore } from '@reduxjs/toolkit';
+import tasksReducer from '../features/tasks/tasksSlice';
+
+export const store = configureStore({
+  reducer: {
+    tasks: tasksReducer,
+  },
+});
+```
+
+6.6 App Router (app/router.jsx)
+
+```jsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './ProtectedRoute';
+import LoginPage from '../features/auth/components/LoginPage';
+import RegisterPage from '../features/auth/components/RegisterPage';
+import DashboardPage from '../features/tasks/components/DashboardPage';
+
+export function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+6.7 ProtectedRoute (components/ProtectedRoute.jsx)
+
+```jsx
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
+function ProtectedRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Outlet />;
+}
+export default ProtectedRoute;
+```
+
+6.8 Main App (App.jsx)
+
+```jsx
+import { Provider } from 'react-redux';
+import { AuthProvider } from './context/AuthContext';
+import { store } from './app/store';
+import { AppRouter } from './app/router';
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </Provider>
+  );
+}
+export default App;
+```
+
+6.9 Task Dashboard Component
+
+```jsx
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../tasksSlice';
+
+function DashboardPage() {
+  const dispatch = useDispatch();
+  const { items: tasks, status, error } = useSelector(state => state.tasks);
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' });
+
+  useEffect(() => {
+    if (status === 'idle') dispatch(fetchTasks());
+  }, [status, dispatch]);
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    dispatch(createTask(newTask));
+    setNewTask({ title: '', description: '', priority: 'medium' });
+  };
+
+  const handleStatusChange = (id, status) => {
+    dispatch(updateTask({ id, updates: { status } }));
+  };
+
+  const handleDelete = (id) => {
+    dispatch(deleteTask(id));
+  };
+
+  if (status === 'loading') return <div>Loading tasks...</div>;
+  if (status === 'failed') return <div>Error: {error}</div>;
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">My Tasks</h1>
+      <form onSubmit={handleAdd} className="mb-4">
+        <input
+          value={newTask.title}
+          onChange={e => setNewTask({ ...newTask, title: e.target.value })}
+          placeholder="Task title"
+          className="border p-2 mr-2"
+          required
+        />
+        <input
+          value={newTask.description}
+          onChange={e => setNewTask({ ...newTask, description: e.target.value })}
+          placeholder="Description"
+          className="border p-2 mr-2"
+        />
+        <select value={newTask.priority} onChange={e => setNewTask({ ...newTask, priority: e.target.value })} className="border p-2 mr-2">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Add Task</button>
+      </form>
+      <ul>
+        {tasks.map(task => (
+          <li key={task._id} className="flex items-center justify-between border-b py-2">
+            <div>
+              <h3 className={`font-medium ${task.status === 'completed' ? 'line-through' : ''}`}>{task.title}</h3>
+              <p className="text-sm text-gray-500">{task.description}</p>
+              <span className="text-xs bg-gray-200 rounded px-2 py-1">{task.priority}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={task.status}
+                onChange={e => handleStatusChange(task._id, e.target.value)}
+                className="border p-1"
+              >
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button onClick={() => handleDelete(task._id)} className="bg-red-500 text-white p-1 rounded">Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default DashboardPage;
+```
+
+---
+
+7. Testing
+
+7.1 Backend Tests (Jest + Supertest)
+
+· Test auth endpoints: register, login, refresh, logout.
+· Test task CRUD with authenticated token.
+· Use a test database (MongoDB memory server or dedicated).
+
+Example test for tasks:
+
+```javascript
+const request = require('supertest');
+const app = require('../app');
+const mongoose = require('mongoose');
+const Task = require('../models/Task');
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+beforeAll(async () => {
+  await mongoose.connect(process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/taskapp_test');
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
+});
+
+beforeEach(async () => {
+  await Task.deleteMany({});
+  await User.deleteMany({});
+});
+
+describe('Task API', () => {
+  let token;
+  let user;
+  beforeEach(async () => {
+    user = await User.create({ name: 'Test', email: 'test@example.com', password: await bcrypt.hash('password', 10) });
+    token = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+  });
+
+  it('should create a task', async () => {
+    const res = await request(app)
+      .post('/tasks')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Test task' });
+    expect(res.statusCode).toBe(201);
+    expect(res.body.title).toBe('Test task');
+  });
+
+  it('should get tasks for user', async () => {
+    await Task.create({ title: 'Task 1', user: user._id });
+    const res = await request(app).get('/tasks').set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveLength(1);
+  });
+});
+```
+
+7.2 Frontend Tests
+
+· Test AuthContext with mocked API.
+· Test Dashboard component with Redux store and mocked API.
+· Use React Testing Library and MSW.
+
+Example test for Dashboard:
+
+```jsx
+import { render, screen, waitFor } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { AuthProvider } from '../context/AuthContext';
+import { store } from '../app/store';
+import DashboardPage from '../features/tasks/components/DashboardPage';
+import { server } from '../mocks/server';
+import { rest } from 'msw';
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+test('renders tasks', async () => {
+  server.use(
+    rest.get('/tasks', (req, res, ctx) => {
+      return res(ctx.json([{ _id: '1', title: 'Test Task', status: 'pending', priority: 'high' }]));
+    })
+  );
+
+  render(
+    <Provider store={store}>
+      <AuthProvider>
+        <DashboardPage />
+      </AuthProvider>
+    </Provider>
+  );
+
+  await waitFor(() => expect(screen.getByText('Test Task')).toBeInTheDocument());
+});
+```
+
+---
+
+8. Security
+
+· Passwords hashed with bcrypt.
+· JWT with short-lived access token; refresh token in HTTP-only cookie.
+· Refresh token rotation and revocation.
+· CORS restricted to frontend origin.
+· Input validation on both client and server.
+· Rate limiting on auth endpoints.
+· HTTPS in production.
+· No secrets in frontend code.
+· Use helmet for secure headers.
+· Use express-rate-limit for auth.
+· Use sameSite: strict cookies.
+
+---
+
+9. Deployment
+
+9.1 Backend to Render
+
+· Push code to GitHub.
+· Create a Web Service on Render.
+· Build command: npm install; start command: npm start.
+· Add environment variables: MONGODB_URI, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET, FRONTEND_ORIGIN, NODE_ENV=production.
+· Render provides HTTPS and process management.
+
+9.2 Frontend to Vercel/Netlify
+
+· Build command: npm run build.
+· Publish directory: dist.
+· Add environment variable: VITE_API_URL set to Render backend URL.
+· Add SPA redirects.
+
+9.3 Database to MongoDB Atlas
+
+· Create a free cluster.
+· Create database user and whitelist IPs.
+· Get connection string.
+· Set MONGODB_URI in Render env.
+
+9.4 CI/CD with GitHub Actions
+
+Create a workflow to deploy frontend and backend on push to main, similar to Module 29.
+
+---
+
+10. What You Learn
+
+· Full-stack architecture.
+· Secure authentication implementation.
+· CRUD operations with authorization.
+· State management with Redux Toolkit.
+· Axios interceptors for token refresh.
+· Responsive UI with Tailwind.
+· Testing backend and frontend.
+· Deployment to production platforms.
+
+---
+
+11. Possible Extensions
+
+· Add task categories/tags.
+· Implement pagination and search.
+· Add due date reminders.
+· Real-time updates with WebSockets.
+· Implement task sharing between users.
+· Add file attachments.
+· Use TypeScript for both frontend and backend.
+· Add Docker for containerization.
+
+---
+
+12. Common Mistakes to Avoid
+
+· Not hashing passwords.
+· Using long-lived access tokens.
+· Storing tokens in localStorage only.
+· Not handling refresh token rotation.
+· Not validating input on server.
+· Ignoring CORS.
+· Not using environment variables for secrets.
+· Not implementing loading/error states.
+· Not testing critical flows.
+· Overcomplicating the initial version.
+
+---
+
+13. Best Practices
+
+· Keep frontend and backend separate for scalability.
+· Use a service layer for API calls.
+· Centralize error handling.
+· Use environment variables.
+· Write tests for critical components.
+· Use consistent naming conventions.
+· Implement security best practices.
+· Document the project with README.
+· Use Git for version control, commit often.
+· Deploy early and often.
+
+---
+
+14. Conclusion
+
+This final project brings together all the concepts from the handbook. By building it, you have demonstrated proficiency in React, Node.js, Express, MongoDB, authentication, state management, API integration, testing, and deployment. This project can be used as a portfolio piece to showcase your full-stack development skills to potential employers.
+
+---
+
+Final Cheat Sheet
+
+Frontend (React)
+
+· State: useState, useReducer for local; Redux Toolkit for global.
+· Side Effects: useEffect, useLayoutEffect.
+· Performance: React.memo, useMemo, useCallback, code splitting with React.lazy and Suspense.
+· Routing: React Router v6 (BrowserRouter, Routes, Route, Link, useNavigate, useParams, Outlet).
+· Forms: React Hook Form + Zod.
+· Styling: Tailwind CSS, CSS Modules, Styled Components.
+· API: Axios with interceptors.
+· Auth: JWT access token in memory, refresh token in HTTP-only cookie.
+· Testing: React Testing Library + Jest.
+
+Backend (Node.js/Express)
+
+· Express: app.use, app.get/post/put/delete, express.Router, express.json, express.static.
+· Middleware: cors, helmet, cookie-parser, custom auth.
+· Auth: JWT (jsonwebtoken), bcrypt/argon2 for hashing, refresh token rotation.
+· Database: Mongoose for MongoDB; pg for PostgreSQL.
+· Environment: dotenv.
+· Testing: Supertest + Jest.
+· Process manager: PM2.
+· Deployment: Render/VPS, Nginx reverse proxy.
+
+MongoDB
+
+· Documents: JSON-like, in collections.
+· CRUD: insertOne/insertMany, find/findOne, updateOne/updateMany, deleteOne/deleteMany.
+· Query operators: $gt, $lt, $in, $set, $unset, $push, $pull.
+· Indexes: createIndex, explain().
+· Aggregation: $match, $group, $project, $sort, $lookup.
+· Mongoose: schemas, models, middleware.
+
+PostgreSQL
+
+· SQL: SELECT, INSERT, UPDATE, DELETE, JOIN, GROUP BY, ORDER BY.
+· Data types: INTEGER, VARCHAR, TEXT, TIMESTAMP, JSONB, UUID.
+· Transactions: BEGIN, COMMIT, ROLLBACK.
+· Node.js: pg Pool, parameterized queries.
+· ORMs: Sequelize, Prisma.
+
+Security
+
+· XSS: escape output, sanitize with DOMPurify.
+· CSRF: SameSite cookies, CSRF tokens.
+· JWT: short-lived, strong secrets, HTTPS.
+· Token storage: access token in memory, refresh in HTTP-only cookie.
+· CORS: restrict origins.
+· Rate limiting: express-rate-limit.
+· Input validation: Zod/Joi.
+· Password hashing: bcrypt (cost 10+) or argon2.
+
+Deployment
+
+· Frontend: Netlify/Vercel/static hosting; SPA redirects.
+· Backend: Render/Heroku/VPS; PM2 or PaaS.
+· Database: MongoDB Atlas, PostgreSQL (Render/AWS).
+· CI/CD: GitHub Actions.
+· Environment: .env files, platform secrets.
+
+---
+
+Final Interview Revision
+
+Most Important Questions
+
+1. Explain the difference between state and props.
+   · State is internal and mutable; props are read-only inputs from parent.
+2. How does React's virtual DOM work?
+   · Creates in-memory representation, diffs with previous, applies minimal changes to real DOM.
+3. What are hooks and why were they introduced?
+   · Functions that allow state/lifecycle in functional components; introduced to avoid class complexity.
+4. What is the purpose of useEffect?
+   · Handle side effects after render; cleanup on unmount/dependency change.
+5. How do you manage global state?
+   · Context API for simple, Redux Toolkit for complex, RTK Query for server state.
+6. Explain JWT authentication flow.
+   · Login returns access token (short) and refresh token (long, cookie); access token sent in header; refresh used to get new access token.
+7. What is CORS and how do you fix it?
+   · Browser security; server must include Access-Control-Allow-Origin headers.
+8. How do you optimize a React app?
+   · Code splitting, memoization, virtualization, lazy loading, bundle optimization.
+9. What is the difference between controlled and uncontrolled components?
+   · Controlled: React state drives value; uncontrolled: DOM manages, refs access.
+10. How do you test a React component?
+    · React Testing Library; render, query, simulate events, assert.
+
+Most Important Concepts
+
+· Component lifecycle and hooks.
+· Unidirectional data flow.
+· Virtual DOM and reconciliation.
+· State management patterns.
+· REST API design.
+· Authentication and security.
+· Database indexing and queries.
+· Deployment and CI/CD.
+
+Common Traps
+
+· Mutating state directly.
+· Not using keys in lists.
+· Forgetting cleanup in useEffect.
+· Overusing useMemo/useCallback.
+· Not handling loading/error states.
+· Storing secrets in frontend.
+· Ignoring CORS.
+· Not using parameterized SQL (SQL injection).
+· Not hashing passwords.
+
+One-Line Definitions
+
+Concept Definition
+JSX Syntax extension for writing HTML in JavaScript
+Virtual DOM In-memory representation of real DOM
+Props Read-only inputs passed to components
+State Internal mutable data in component
+useState Hook for local state
+useEffect Hook for side effects
+Context API Share data without prop drilling
+Redux Toolkit Official Redux library for state management
+React Router Library for client-side routing
+Axios HTTP client with interceptors
+JWT Token format for authentication
+CORS Cross-Origin Resource Sharing
+MongoDB NoSQL document database
+PostgreSQL Relational SQL database
+Express Node.js web framework
+Docker Containerization platform
+CI/CD Continuous Integration/Deployment
+Nginx Web server, reverse proxy
+
+---
+
+Conclusion
+
+Congratulations! You have completed the comprehensive full-stack development handbook. You now possess the knowledge and skills to build production-ready React applications with Node.js, Express, and databases (MongoDB/PostgreSQL). This handbook serves as a reference for learning, interview preparation, and daily development. Continue building projects, contributing to open source, and staying updated with the latest trends. Good luck on your journey as a full-stack developer!
+
+-- Designed by
+```
+Brijesh Nishad (Full Stack Engineer)
+```
+
