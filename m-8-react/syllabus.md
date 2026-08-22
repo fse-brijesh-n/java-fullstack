@@ -5854,4 +5854,1641 @@ This concludes Module 06: Advanced State. The next module is Module 07: Forms, c
 
 
 
+Module 07: Forms
+
+Forms are essential for gathering user input in web applications. React provides a controlled approach to form handling, where component state manages form data, enabling dynamic validation, conditional rendering, and seamless integration with other UI logic. This module covers form elements, controlled/uncontrolled components, validation strategies, and popular libraries like React Hook Form and Zod.
+
+---
+
+1. Form Handling
+
+1.1 Definition
+
+Form handling in React refers to the process of managing user input from HTML form elements (input, textarea, select, checkbox, radio) within React components. It involves capturing changes, storing values in state, validating input, and handling submission.
+
+1.2 Why It Exists
+
+Forms are the primary way users interact with web applications, from login and registration to search and data entry. React needs a consistent way to manage form data and update the UI based on user input.
+
+1.3 Purpose
+
+· Capture user input
+· Validate and sanitize data
+· Provide feedback (errors, success)
+· Submit data to APIs or other services
+· Maintain form state across interactions
+
+1.4 Prerequisites
+
+· Understanding of React state (useState)
+· Basic HTML form elements
+· Event handling (onChange, onSubmit)
+
+1.5 Core Concepts
+
+· Controlled Components: Form elements whose values are controlled by React state.
+· Uncontrolled Components: Form elements that manage their own internal state; accessed via refs.
+· Validation: Checking input against rules (required, pattern, custom).
+· Error Handling: Displaying validation messages.
+· Submission: Handling form submit, often with preventDefault.
+
+---
+
+2. Controlled Components
+
+2.1 Definition
+
+A controlled component is a form element whose value is driven by React state. The component's state is the "single source of truth"; the input value is set via the value prop, and changes are handled by an onChange handler that updates state.
+
+2.2 Why It Exists
+
+To keep React in control of form data, enabling immediate validation, conditional rendering, and synchronization with other UI. It follows React's declarative paradigm.
+
+2.3 Syntax
+
+```jsx
+const [value, setValue] = useState('');
+<input value={value} onChange={(e) => setValue(e.target.value)} />
+```
+
+2.4 Basic Example: Controlled Input
+
+```jsx
+function NameForm() {
+  const [name, setName] = useState('');
+  const handleChange = (e) => setName(e.target.value);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert(`Hello, ${name}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Name:
+        <input type="text" value={name} onChange={handleChange} />
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+2.5 Advantages
+
+· Single source of truth
+· Easy to validate and manipulate input
+· Supports dynamic UI updates
+· Enables controlled submission
+
+2.6 Disadvantages
+
+· More code for each input
+· Can cause performance issues if many inputs (each keystroke re-renders)
+· Requires state for every form field
+
+2.7 Interview Question
+
+Q: What is a controlled component?
+Answer: A controlled component is one where React state controls the value of a form element, and changes update the state via an onChange handler. React is the single source of truth.
+
+---
+
+3. Uncontrolled Components
+
+3.1 Definition
+
+An uncontrolled component is a form element that manages its own internal state. React does not control the value; instead, you access the value using a ref when needed (e.g., on submission). Default values can be set with the defaultValue prop.
+
+3.2 Why It Exists
+
+To reduce boilerplate for simple forms where you don't need to track every keystroke. It can also improve performance for large forms by avoiding re-renders on every change.
+
+3.3 Syntax
+
+```jsx
+const inputRef = useRef(null);
+<input ref={inputRef} defaultValue="initial" />
+
+// Access value
+inputRef.current.value
+```
+
+3.4 Example
+
+```jsx
+function UncontrolledForm() {
+  const inputRef = useRef(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert(`Hello, ${inputRef.current.value}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Name:
+        <input type="text" ref={inputRef} defaultValue="" />
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+3.5 Controlled vs Uncontrolled
+
+Aspect Controlled Uncontrolled
+State source React state DOM itself
+Data access via state variable via ref
+Re-renders On every change Only on submit (if not using onChange)
+Use case Real-time validation, dynamic UI Simple forms, file inputs
+Code complexity More boilerplate Less code
+
+3.6 Interview Question
+
+Q: When would you use an uncontrolled component?
+Answer: For simple forms where you only need the value on submission, or when performance is a concern with many inputs. File inputs are inherently uncontrolled because the file object can't be set programmatically.
+
+---
+
+4. Input Fields
+
+4.1 Definition
+
+Input fields (<input>) are form elements for text, number, email, password, etc. In controlled components, they bind to state via value and onChange.
+
+4.2 Handling Different Types
+
+· type="text" – string value
+· type="number" – string value (need parse)
+· type="checkbox" – boolean via checked
+· type="radio" – string via checked and value
+
+4.3 Example: Controlled text input
+
+```jsx
+const [text, setText] = useState('');
+<input type="text" value={text} onChange={e => setText(e.target.value)} />
+```
+
+4.4 Number Input
+
+```jsx
+const [age, setAge] = useState('');
+<input type="number" value={age} onChange={e => setAge(e.target.value)} />
+// age is string; convert if needed
+```
+
+---
+
+5. Textarea
+
+5.1 Definition
+
+A <textarea> element for multi-line text. In React, it is controlled similarly to input, using value and onChange.
+
+5.2 Example
+
+```jsx
+const [bio, setBio] = useState('');
+<textarea value={bio} onChange={e => setBio(e.target.value)} />
+```
+
+5.3 Note
+
+Unlike HTML, React does not use innerHTML for textarea; it uses the value attribute.
+
+---
+
+6. Select
+
+6.1 Definition
+
+A <select> dropdown element. In React, the selected value is controlled by the value prop on the <select> element, not by adding selected to individual <option> tags.
+
+6.2 Example
+
+```jsx
+const [country, setCountry] = useState('usa');
+<select value={country} onChange={e => setCountry(e.target.value)}>
+  <option value="usa">USA</option>
+  <option value="canada">Canada</option>
+  <option value="india">India</option>
+</select>
+```
+
+---
+
+7. Checkbox
+
+7.1 Definition
+
+A checkbox is an input type used for boolean values. In controlled components, use the checked prop instead of value.
+
+7.2 Example
+
+```jsx
+const [isChecked, setIsChecked] = useState(false);
+<input
+  type="checkbox"
+  checked={isChecked}
+  onChange={e => setIsChecked(e.target.checked)}
+/>
+```
+
+7.3 Multiple Checkboxes
+
+If multiple checkboxes share state, use an array or object in state.
+
+---
+
+8. Radio Buttons
+
+8.1 Definition
+
+Radio buttons allow selecting one option from a group. Each radio has a value; the controlled component's state holds the selected value.
+
+8.2 Example
+
+```jsx
+const [gender, setGender] = useState('female');
+<label>
+  <input type="radio" value="male" checked={gender === 'male'} onChange={e => setGender(e.target.value)} />
+  Male
+</label>
+<label>
+  <input type="radio" value="female" checked={gender === 'female'} onChange={e => setGender(e.target.value)} />
+  Female
+</label>
+```
+
+---
+
+9. Multiple Inputs
+
+9.1 Definition
+
+Handling multiple controlled inputs can be done by giving each input a name attribute and using a single state object. The onChange handler updates the specific field based on event.target.name.
+
+9.2 Example: Using a single state object
+
+```jsx
+const [formData, setFormData] = useState({ name: '', email: '' });
+
+const handleChange = (e) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
+
+<input name="name" value={formData.name} onChange={handleChange} />
+<input name="email" value={formData.email} onChange={handleChange} />
+```
+
+9.3 Benefits
+
+· Less code duplication
+· Easy to manage many inputs
+
+---
+
+10. Dynamic Forms
+
+10.1 Definition
+
+Dynamic forms are forms where fields can be added or removed at runtime. Common examples: adding multiple phone numbers, education entries, or list items.
+
+10.2 Implementation Approach
+
+· Store an array of objects in state.
+· Render inputs by mapping over the array.
+· Provide buttons to add/remove items.
+· Ensure each input has a unique key.
+
+10.3 Example: Dynamic phone numbers
+
+```jsx
+const [phones, setPhones] = useState(['']);
+
+const addPhone = () => setPhones([...phones, '']);
+const removePhone = (index) => setPhones(phones.filter((_, i) => i !== index));
+const handlePhoneChange = (index, value) => {
+  const newPhones = phones.map((phone, i) => i === index ? value : phone);
+  setPhones(newPhones);
+};
+
+{phones.map((phone, index) => (
+  <div key={index}>
+    <input value={phone} onChange={e => handlePhoneChange(index, e.target.value)} />
+    <button onClick={() => removePhone(index)}>Remove</button>
+  </div>
+))}
+<button onClick={addPhone}>Add Phone</button>
+```
+
+10.4 Best Practices
+
+· Use stable unique ids if possible (not array index) for keys, especially if reordering.
+· Ensure input updates are immutable.
+
+---
+
+11. Form Validation
+
+11.1 Definition
+
+Form validation ensures that user input meets certain criteria before submission. It can be performed:
+
+· On change (real-time feedback)
+· On blur (when field loses focus)
+· On submit (after user attempts to submit)
+
+11.2 Why It Exists
+
+To improve data quality, prevent invalid submissions, and guide users with clear feedback.
+
+11.3 Types of Validation
+
+· Required: field must not be empty
+· Format: email, phone, regex patterns
+· Length: min/max characters
+· Custom: business rules (e.g., password confirmation)
+
+11.4 Manual Validation Example
+
+```jsx
+const [email, setEmail] = useState('');
+const [error, setError] = useState('');
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (!email) {
+    setError('Email is required');
+    return;
+  }
+  if (!email.includes('@')) {
+    setError('Invalid email');
+    return;
+  }
+  setError('');
+  // submit
+};
+```
+
+11.5 Validation Best Practices
+
+· Show errors close to the field.
+· Use clear, concise messages.
+· Validate on submit and optionally on blur/change.
+· Disable submit button if form invalid (or show errors on attempt).
+
+---
+
+12. Error Handling
+
+12.1 Definition
+
+Error handling in forms involves detecting validation errors, storing them, and displaying them to the user. This can be done by keeping an errors object in state.
+
+12.2 Example: Multiple errors object
+
+```jsx
+const [errors, setErrors] = useState({});
+
+const validate = () => {
+  const newErrors = {};
+  if (!name) newErrors.name = 'Name required';
+  if (!email) newErrors.email = 'Email required';
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (validate()) {
+    // submit
+  }
+};
+```
+
+12.3 Displaying Errors
+
+```jsx
+{errors.name && <span className="error">{errors.name}</span>}
+```
+
+---
+
+13. Form Submission
+
+13.1 Definition
+
+Form submission is the process of collecting form data and sending it to a server or processing it. In React, it is handled via onSubmit on the form element, typically with preventDefault to prevent page reload.
+
+13.2 Example with API Call
+
+```jsx
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const response = await axios.post('/api/submit', formData);
+    // handle success
+  } catch (error) {
+    setError('Submission failed');
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+13.3 Best Practices
+
+· Prevent default submission to maintain SPA behavior.
+· Show loading state during submission.
+· Handle errors gracefully.
+· Reset form after successful submission if needed.
+
+---
+
+14. React Hook Form
+
+14.1 Definition
+
+React Hook Form is a library for managing forms in React with minimal re-renders and high performance. It uses uncontrolled components internally but provides a hook-based API, allowing easy validation and integration.
+
+14.2 Why It Exists
+
+To simplify form handling, reduce boilerplate, improve performance (fewer re-renders), and provide built-in validation and error management.
+
+14.3 Installation
+
+```bash
+npm install react-hook-form
+```
+
+14.4 Basic Usage
+
+```jsx
+import { useForm } from 'react-hook-form';
+
+function MyForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email', { required: 'Email is required' })} />
+      {errors.email && <span>{errors.email.message}</span>}
+      <input type="submit" />
+    </form>
+  );
+}
+```
+
+14.5 Key Features
+
+· register: registers an input and validation rules.
+· handleSubmit: wraps your submit handler and performs validation.
+· formState.errors: contains validation errors.
+· watch, setValue, reset, etc.
+· Integrates with external validation libraries (Zod, Yup).
+
+14.6 Performance Benefits
+
+By default, React Hook Form uses uncontrolled inputs and only re-renders on form state changes, not on every keystroke, leading to better performance in large forms.
+
+14.7 Interview Question
+
+Q: What are the advantages of React Hook Form over controlled components?
+Answer: React Hook Form reduces boilerplate, improves performance by avoiding re-renders on every keystroke, supports built-in validation, and integrates easily with external schema validators. It is ideal for complex forms.
+
+---
+
+15. Zod Validation
+
+15.1 Definition
+
+Zod is a TypeScript-first schema declaration and validation library. It allows you to define data schemas and validate values against them. It integrates with React Hook Form via resolvers to validate form data.
+
+15.2 Why It Exists
+
+To provide a type-safe, declarative way to validate complex data structures. In forms, Zod schemas can replace manual validation logic and improve maintainability.
+
+15.3 Installation
+
+```bash
+npm install zod @hookform/resolvers
+```
+
+15.4 Basic Usage with React Hook Form
+
+```jsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email('Invalid email'),
+  age: z.number().min(18, 'Must be 18+'),
+});
+
+function MyForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema)
+  });
+
+  const onSubmit = (data) => console.log(data);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+      <input type="number" {...register('age', { valueAsNumber: true })} />
+      {errors.age && <span>{errors.age.message}</span>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+15.5 Benefits of Zod
+
+· TypeScript integration (auto infer types)
+· Expressive schema definition
+· Rich validation methods (string, number, object, array, optional, etc.)
+· Easy integration with other tools
+
+15.6 Interview Question
+
+Q: Why would you use Zod with React Hook Form?
+Answer: Zod provides a declarative and type-safe way to define form validation schemas. It reduces manual validation code, ensures consistency, and works seamlessly with React Hook Form via resolvers, producing clearer error messages.
+
+---
+
+16. Real-World Scenario: Multi-Step Registration Form
+
+Problem: Build a multi-step registration form with fields for personal info, address, and account details. Each step validates before moving to the next; final submission sends all data to an API.
+
+Solution:
+
+· Use React Hook Form with a single form context to manage all steps.
+· Use Zod schemas for each step's fields.
+· Use state to track current step.
+· Validate step fields on "Next" button click.
+· Collect data from all steps and submit at the end.
+
+Architecture:
+
+```mermaid
+flowchart LR
+    A[Step1 Personal] -->|Next| B[Step2 Address]
+    B -->|Next| C[Step3 Account]
+    C -->|Submit| D[API Call]
+    D -->|Success| E[Success Message]
+    D -->|Error| F[Show Error]
+```
+
+Implementation (simplified):
+
+```jsx
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const step1Schema = z.object({ firstName: z.string().min(1, 'Required') });
+const step2Schema = z.object({ address: z.string().min(1, 'Required') });
+const step3Schema = z.object({ email: z.string().email('Invalid email') });
+
+function RegistrationForm() {
+  const methods = useForm({ resolver: zodResolver(step1Schema) }); // update resolver per step
+  const [step, setStep] = useState(1);
+  // ... manage step-specific validation, submission
+}
+```
+
+This is a high-level example; full implementation would involve dynamic resolver and step management.
+
+---
+
+17. Module 07 – Quick Revision
+
+· Controlled components: state drives input values.
+· Uncontrolled components: DOM manages values, accessed via refs.
+· Use value for text, textarea, select; checked for checkbox/radio.
+· Manage multiple inputs with a single state object and name attribute.
+· Dynamic forms use arrays in state and map to render.
+· Validation can be manual or using libraries like React Hook Form.
+· React Hook Form reduces re-renders and simplifies validation.
+· Zod provides type-safe schema validation; integrates with React Hook Form.
+
+---
+
+18. Interview Questions – Module 07
+
+Beginner
+
+1. What is a controlled component?
+      A form element whose value is controlled by React state, with changes handled by onChange.
+2. How do you handle form submission in React?
+      Use onSubmit on the form, call preventDefault, then process the data.
+3. What is the difference between value and defaultValue in React?
+      value makes an input controlled; defaultValue sets initial value without controlling subsequent changes.
+
+Intermediate
+
+1. Explain how to handle multiple inputs with one state object.
+      Give each input a name attribute and use a single state object. In onChange, update the field using [e.target.name]: e.target.value.
+2. What are the benefits of React Hook Form over traditional controlled forms?
+      React Hook Form uses uncontrolled inputs, leading to fewer re-renders, less boilerplate, built-in validation, and easy integration with schema validators.
+3. How do you validate a form before submission?
+      You can manually validate in handleSubmit, or use a library like React Hook Form with validation rules or Zod schemas.
+
+Advanced
+
+1. How would you implement a dynamic form where users can add/remove fields?
+      Store an array in state, map over it to render inputs, and provide buttons to append or remove items. Ensure unique keys and immutable updates.
+2. Explain the integration of Zod with React Hook Form.
+      Use zodResolver from @hookform/resolvers/zod, passing a Zod schema. React Hook Form will validate form data against the schema and populate errors.
+3. What are the performance implications of controlled components in large forms?
+      Each keystroke causes a state update and re-render of the component (and possibly children). This can lead to performance degradation; libraries like React Hook Form avoid this by using uncontrolled components.
+
+Scenario-Based
+
+Q: A form has 50 inputs and lags when typing. How would you optimize?
+Answer: Switch to uncontrolled components or use React Hook Form, which minimizes re-renders. Also, isolate each input as a separate memoized component to prevent parent re-renders on every keystroke.
+
+Coding Questions
+
+1. Write a controlled component for a textarea with a character count limit.
+
+```jsx
+function LimitedTextarea({ maxLength }) {
+  const [text, setText] = useState('');
+  const handleChange = (e) => {
+    if (e.target.value.length <= maxLength) setText(e.target.value);
+  };
+  return (
+    <div>
+      <textarea value={text} onChange={handleChange} />
+      <span>{text.length}/{maxLength}</span>
+    </div>
+  );
+}
+```
+
+2. Implement a simple form with React Hook Form that validates an email field.
+
+```jsx
+import { useForm } from 'react-hook-form';
+
+function EmailForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const onSubmit = (data) => console.log(data);
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email', { required: 'Email required', pattern: { value: /^\S+@\S+$/, message: 'Invalid email' } })} />
+      {errors.email && <p>{errors.email.message}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+---
+
+19. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Forgetting preventDefault on submit Always call e.preventDefault() unless intentionally submitting normally
+Using value for checkbox/radio Use checked for boolean elements
+Mutating state directly in dynamic forms Use immutable updates (map, filter, spread)
+Using array index as key in dynamic fields Use stable IDs when possible; index only if static
+Overcomplicating validation Use libraries like React Hook Form + Zod
+Not providing error feedback Display clear errors near fields
+
+---
+
+20. Testing Forms
+
+· Use React Testing Library to simulate user input and submission.
+· Test validation messages appear when fields are empty/invalid.
+· Test form submission calls API with correct data.
+· Mock API calls and assert loading/error states.
+
+---
+
+This concludes Module 07: Forms. The next module is Module 08: API Integration, covering Fetch API, Axios, interceptors, token refresh, and service layers.
+
+
+
+
+Module 08: API Integration
+
+API integration is a crucial part of modern React applications, enabling them to communicate with backend services, fetch data, and submit user actions. This module covers the two primary tools for making HTTP requests—Fetch API and Axios—along with advanced patterns like interceptors, instance configuration, token management, and building a robust service layer. You'll learn how to handle loading, errors, and authentication flows in a React context.
+
+---
+
+1. Fetch API
+
+1.1 Definition
+
+The Fetch API is a built-in browser interface for making asynchronous HTTP requests. It is promise-based and returns a Response object that can be parsed as JSON, text, blob, etc. It replaces the older XMLHttpRequest and is supported in all modern browsers.
+
+1.2 Why It Exists
+
+To provide a modern, flexible, and promise-based way to interact with servers without external libraries. It simplifies asynchronous communication and integrates well with async/await.
+
+1.3 Purpose
+
+· Send HTTP requests (GET, POST, PUT, DELETE, etc.)
+· Receive and parse server responses
+· Handle network errors
+· Support streaming responses
+
+1.4 Basic Syntax
+
+```javascript
+fetch(url, options)
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
+```
+
+1.5 Example: GET Request
+
+```javascript
+fetch('https://api.example.com/users')
+  .then(res => {
+    if (!res.ok) throw new Error('Network error');
+    return res.json();
+  })
+  .then(users => console.log(users))
+  .catch(err => console.error(err));
+```
+
+1.6 Example: POST Request with JSON
+
+```javascript
+fetch('https://api.example.com/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Alice' })
+})
+  .then(res => res.json())
+  .then(data => console.log(data));
+```
+
+1.7 Important Notes
+
+· Fetch only rejects on network failure, not on HTTP errors (like 404/500). You must manually check response.ok.
+· Need to set headers manually for JSON.
+· No timeout support by default; you can use AbortController to implement timeouts.
+· No built-in interceptors or instance configuration.
+
+1.8 When to Use Fetch
+
+· For simple requests in small projects
+· When you want to avoid external dependencies
+· In service workers or non‑browser environments where Axios may not fit
+
+---
+
+2. Axios
+
+2.1 Definition
+
+Axios is a promise-based HTTP client for the browser and Node.js. It provides a rich API with features like automatic JSON transformation, request/response interceptors, timeout support, and better error handling.
+
+2.2 Why It Exists
+
+To overcome Fetch API's limitations: no automatic JSON parsing, no interceptors, no timeout by default, and inconsistent error handling across browsers. Axios simplifies complex HTTP scenarios.
+
+2.3 Installation
+
+```bash
+npm install axios
+```
+
+2.4 Basic Usage
+
+```javascript
+import axios from 'axios';
+
+axios.get('/api/users')
+  .then(response => console.log(response.data))
+  .catch(error => console.error(error));
+```
+
+2.5 Key Features
+
+· Automatic JSON data transformation
+· Request/response interceptors
+· Timeout configuration
+· Request cancellation (with AbortController)
+· Default headers and base URL
+· Works in Node.js (server-side)
+· HTTP status error handling (throws on non‑2xx)
+
+2.6 When to Use Axios
+
+· Larger applications with many API calls
+· When you need interceptors for authentication tokens
+· When you want consistent error handling
+· When building a service layer
+
+---
+
+3. GET Request
+
+3.1 Definition
+
+A GET request retrieves data from a server. It is the most common HTTP method for reading resources. It should not have a request body and is idempotent.
+
+3.2 Fetch Example
+
+```javascript
+fetch('/api/users')
+  .then(res => res.json())
+  .then(data => setUsers(data));
+```
+
+3.3 Axios Example
+
+```javascript
+const response = await axios.get('/api/users');
+setUsers(response.data);
+```
+
+3.4 Passing Query Parameters
+
+Axios supports a params option:
+
+```javascript
+const response = await axios.get('/api/users', {
+  params: { page: 1, limit: 10 }
+});
+```
+
+Fetch requires manual URL building or URLSearchParams:
+
+```javascript
+const url = new URL('/api/users', base);
+url.searchParams.append('page', 1);
+fetch(url);
+```
+
+---
+
+4. POST Request
+
+4.1 Definition
+
+A POST request sends data to the server to create a new resource. It includes a request body (usually JSON) and is not idempotent.
+
+4.2 Axios Example
+
+```javascript
+const newUser = await axios.post('/api/users', { name: 'Alice', age: 25 });
+```
+
+4.3 Fetch Example
+
+```javascript
+fetch('/api/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Alice', age: 25 })
+})
+```
+
+---
+
+5. PUT Request
+
+5.1 Definition
+
+A PUT request replaces an entire resource with new data. It is idempotent and requires the full resource representation.
+
+5.2 Axios Example
+
+```javascript
+await axios.put(`/api/users/${id}`, { name: 'Alice', age: 26 });
+```
+
+5.3 Fetch Example
+
+```javascript
+fetch(`/api/users/${id}`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Alice', age: 26 })
+});
+```
+
+---
+
+6. PATCH Request
+
+6.1 Definition
+
+A PATCH request partially updates a resource. Unlike PUT, it only sends the fields that need to be changed.
+
+6.2 Axios Example
+
+```javascript
+await axios.patch(`/api/users/${id}`, { age: 27 });
+```
+
+6.3 Fetch Example
+
+```javascript
+fetch(`/api/users/${id}`, {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ age: 27 })
+});
+```
+
+---
+
+7. DELETE Request
+
+7.1 Definition
+
+A DELETE request removes a resource from the server. It is idempotent.
+
+7.2 Axios Example
+
+```javascript
+await axios.delete(`/api/users/${id}`);
+```
+
+7.3 Fetch Example
+
+```javascript
+fetch(`/api/users/${id}`, { method: 'DELETE' });
+```
+
+---
+
+8. Axios Instance
+
+8.1 Definition
+
+An Axios instance is a custom configuration object created with axios.create(). It allows you to define default settings (base URL, headers, timeout) that apply to all requests made through that instance.
+
+8.2 Why It Exists
+
+To avoid repeating common configuration for every request and to create multiple clients for different APIs or environments.
+
+8.3 Syntax
+
+```javascript
+const api = axios.create({
+  baseURL: 'https://api.example.com',
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' }
+});
+```
+
+8.4 Usage
+
+```javascript
+const response = await api.get('/users');
+```
+
+8.5 Example with Environment Variable
+
+```javascript
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+});
+```
+
+8.6 Benefits
+
+· Centralized configuration
+· Easier maintenance
+· Can apply interceptors to the instance only
+· Enables multiple clients (e.g., one for public API, one for authenticated API)
+
+---
+
+9. Axios Interceptors
+
+9.1 Definition
+
+Interceptors are functions that run before a request is sent or after a response is received. They allow you to modify requests, add headers, handle errors globally, or refresh tokens.
+
+9.2 Why They Exist
+
+To centralize cross-cutting concerns like authentication tokens, logging, error handling, and retry logic, without duplicating code in every call.
+
+9.3 Request Interceptor
+
+Runs before every request. Used to add authorization headers, set loading state, or modify request data.
+
+```javascript
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+```
+
+9.4 Response Interceptor
+
+Runs after a response is received. Used to handle global errors, refresh tokens on 401, or transform response data.
+
+```javascript
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response.status === 401) {
+      // handle token refresh or logout
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+9.5 Best Practices
+
+· Keep interceptors simple and specific.
+· Avoid heavy side effects in interceptors.
+· Use interceptors on the instance, not global axios.
+· Handle token refresh carefully to avoid infinite loops.
+
+---
+
+10. Request Interceptor (Detailed)
+
+10.1 Purpose
+
+Request interceptors modify the outgoing request. Common uses:
+
+· Attach JWT token from storage.
+· Set default headers (e.g., Accept: application/json).
+· Log requests for debugging.
+· Add a timestamp or request ID.
+· Trigger loading state globally.
+
+10.2 Implementation
+
+```javascript
+// api.js
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL });
+
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken(); // from cookies or localStorage
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    config.headers['X-Request-ID'] = crypto.randomUUID();
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+```
+
+10.3 Interview Question
+
+Q: What is a request interceptor and when would you use one?
+Answer: A request interceptor is a function that runs before an HTTP request is sent. It is used to modify the request, such as adding authentication headers, logging, or setting global configurations. It centralizes cross-cutting concerns, avoiding repetitive code.
+
+---
+
+11. Response Interceptor (Detailed)
+
+11.1 Purpose
+
+Response interceptors process the response before it reaches the calling code. Common uses:
+
+· Global error handling (e.g., redirect to login on 401)
+· Automatic token refresh on 401
+· Response data transformation (e.g., extract data field)
+· Logging responses
+· Error normalization
+
+11.2 Implementation (Basic Error Handling)
+
+```javascript
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401) {
+        // redirect to login or refresh token
+      } else if (status === 403) {
+        // handle forbidden
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+11.3 Interview Question
+
+Q: How do you handle a 401 Unauthorized globally in Axios?
+Answer: Use a response interceptor to check error.response.status === 401. Then you can attempt to refresh the token, and if refresh fails, redirect the user to the login page or dispatch a logout action.
+
+---
+
+12. Loading State
+
+12.1 Definition
+
+Loading state indicates that an API request is in progress. It is typically a boolean flag that controls the display of a spinner or skeleton UI.
+
+12.2 Why It Exists
+
+To provide feedback to users during asynchronous operations, improving perceived performance and user experience.
+
+12.3 Managing Loading with useState
+
+```jsx
+const [loading, setLoading] = useState(false);
+
+const fetchData = async () => {
+  setLoading(true);
+  try {
+    const res = await api.get('/data');
+    setData(res.data);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+12.4 UI Conditional Rendering
+
+```jsx
+if (loading) return <Spinner />;
+if (error) return <Error message={error} />;
+return <DataView data={data} />;
+```
+
+12.5 Best Practices
+
+· Always set loading to false in finally.
+· Consider using a loading counter if multiple requests are in flight.
+· For multiple loading states, use an object like { loading: boolean, submitting: boolean }.
+
+---
+
+13. Error Handling
+
+13.1 Definition
+
+Error handling in API integration involves catching request failures, extracting meaningful messages, and presenting them to the user or logging them for debugging.
+
+13.2 Types of Errors
+
+· Network errors: no internet, CORS, DNS failure.
+· HTTP errors: 4xx, 5xx status codes.
+· Parsing errors: invalid JSON.
+· Application errors: validation errors from server.
+
+13.3 Axios Error Object
+
+Axios errors contain response, request, and message properties. You can extract error.response.data for server-provided error details.
+
+13.4 Best Practices
+
+· Normalize errors in a service layer or interceptor.
+· Use try/catch with async/await or .catch().
+· Provide user-friendly messages.
+· Log detailed errors for debugging.
+
+13.5 Example with Error Extraction
+
+```javascript
+try {
+  await api.get('/users');
+} catch (error) {
+  const message = error.response?.data?.message || 'An error occurred';
+  setError(message);
+}
+```
+
+---
+
+14. API Service Layer
+
+14.1 Definition
+
+An API service layer is an organized set of modules/functions that encapsulate all HTTP calls to a backend. Instead of calling Axios directly in components, you call service functions (e.g., getUsers, createUser).
+
+14.2 Why It Exists
+
+· Separates concerns: components don't know about HTTP details.
+· Centralizes API endpoints and configurations.
+· Easier to mock for testing.
+· Enables reusability and consistency.
+· Provides a single place to change when API evolves.
+
+14.3 Structure Example
+
+```
+src/
+└── services/
+    ├── api.js           # Axios instance and interceptors
+    ├── userService.js
+    └── authService.js
+```
+
+14.4 Implementation
+
+api.js:
+
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+});
+
+// interceptors...
+
+export default api;
+```
+
+userService.js:
+
+```javascript
+import api from './api';
+
+export const getUsers = () => api.get('/users');
+export const createUser = (userData) => api.post('/users', userData);
+export const updateUser = (id, userData) => api.put(`/users/${id}`, userData);
+export const deleteUser = (id) => api.delete(`/users/${id}`);
+```
+
+Usage in component:
+
+```javascript
+import { getUsers } from '../services/userService';
+
+useEffect(() => {
+  getUsers()
+    .then(res => setUsers(res.data))
+    .catch(err => setError(err.message));
+}, []);
+```
+
+14.5 Best Practices
+
+· Keep service functions thin (only HTTP calls).
+· Handle errors in components or via interceptors.
+· Name functions clearly (getX, createX, updateX, deleteX).
+· Use a single Axios instance for each API.
+
+---
+
+15. Authentication API
+
+15.1 Definition
+
+Authentication API endpoints handle user login, registration, logout, and token refresh. In React, you interact with these endpoints from a service layer and manage the resulting tokens securely.
+
+15.2 Common Endpoints
+
+· POST /auth/login – authenticate user, return tokens.
+· POST /auth/register – create new user.
+· POST /auth/logout – invalidate session/tokens.
+· POST /auth/refresh – exchange refresh token for new access token.
+
+15.3 Example Auth Service
+
+```javascript
+export const login = (credentials) => api.post('/auth/login', credentials);
+export const register = (userData) => api.post('/auth/register', userData);
+export const refreshToken = (refreshToken) => api.post('/auth/refresh', { refreshToken });
+```
+
+15.4 Storing Tokens
+
+· Access token: short-lived; stored in memory or localStorage (less secure). For SPA, often in localStorage or a variable.
+· Refresh token: longer-lived; ideally stored in HTTP-only cookie (more secure) or localStorage (less secure).
+· Never store tokens in plain JS variable that resets on refresh unless you use a persistent store (e.g., Redux persist).
+
+15.5 Interview Question
+
+Q: How do you store JWT tokens in a React app?
+Answer: Access tokens are often kept in memory or localStorage; refresh tokens should be stored in HTTP-only cookies to prevent XSS attacks. The most secure approach is to keep both tokens in HTTP-only cookies and let the backend handle token refresh via cookies.
+
+---
+
+16. Access Token
+
+16.1 Definition
+
+An access token is a short-lived credential that grants access to protected API resources. It is typically a JWT (JSON Web Token) that contains user information and expiry.
+
+16.2 Why It Exists
+
+To authenticate API requests without repeatedly sending username/password. Access tokens are short-lived to reduce the window of misuse if stolen.
+
+16.3 Usage in Authorization Header
+
+```javascript
+Authorization: Bearer <access_token>
+```
+
+16.4 Adding Token via Request Interceptor
+
+Already covered above.
+
+16.5 Lifetime
+
+Typically 15 minutes to 1 hour. When it expires, the client must obtain a new one via refresh token.
+
+---
+
+17. Refresh Token
+
+17.1 Definition
+
+A refresh token is a long-lived credential used to obtain a new access token without requiring the user to log in again. It should be stored securely (HTTP-only cookie recommended).
+
+17.2 Why It Exists
+
+To provide a balance between security and user experience: short-lived access tokens limit damage if leaked, while refresh tokens allow seamless renewal.
+
+17.3 How It Works
+
+1. User logs in → receives access token + refresh token.
+2. Access token expires → API returns 401.
+3. Client sends refresh token to /auth/refresh.
+4. Server validates refresh token and issues new access token (and possibly a new refresh token).
+5. Client retries the original request with the new access token.
+
+17.4 Storing Refresh Token
+
+· HTTP-only cookie (recommended): not accessible via JavaScript, mitigates XSS.
+· localStorage: accessible, risk of XSS.
+· Memory: lost on page refresh.
+
+---
+
+18. Token Refresh (Complete Flow)
+
+18.1 Problem
+
+Access token expires; user should not be forced to log in again.
+
+18.2 Solution: Axios Response Interceptor + Refresh Queue
+
+When a request fails with 401, the interceptor:
+
+1. Checks if the failed request is not the refresh endpoint.
+2. Attempts to refresh the token using the refresh token.
+3. If successful, updates stored access token, retries the original request.
+4. If refresh fails, logs out the user (or redirects to login).
+
+18.3 Implementation Example
+
+```javascript
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        const response = await axios.post('/auth/refresh', { refreshToken });
+        const newAccessToken = response.data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        processQueue(null, newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        // logout user
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+18.4 Important Considerations
+
+· Use a flag (isRefreshing) to prevent multiple simultaneous refresh requests.
+· Queue failed requests while refreshing and replay them.
+· Mark the original request with _retry to avoid infinite loop.
+· After refresh, update stored token and default headers.
+
+18.5 Interview Question
+
+Q: Explain how you would implement automatic token refresh with Axios.
+Answer: Use a response interceptor to detect 401 errors. Maintain a refresh in-progress flag and a queue of failed requests. On 401, attempt to refresh the token. If successful, update the token, retry the failed requests, and resolve the queue. If refresh fails, reject all and log out. This ensures seamless user experience.
+
+---
+
+19. Real-World Scenario: Building a Secure API Layer with Token Refresh
+
+Problem: A React application uses JWT authentication with short-lived access tokens (15 min) and long-lived refresh tokens. The app must handle token expiration gracefully without user intervention.
+
+Solution:
+
+· Create an Axios instance with base URL and default headers.
+· Add a request interceptor to attach access token from storage.
+· Add a response interceptor to handle 401 errors by refreshing token.
+· Implement a service layer for API calls.
+· Use React context for authentication state.
+
+Architecture Diagram:
+
+```mermaid
+sequenceDiagram
+    participant C as React Component
+    participant S as Service Layer
+    participant A as Axios Instance
+    participant API as Backend
+
+    C->>S: call getUsers()
+    S->>A: GET /users (with access token)
+    A->>API: Request
+    API-->>A: 401 Unauthorized
+    A->>A: Trigger token refresh
+    A->>API: POST /auth/refresh (refresh token)
+    API-->>A: New access token
+    A->>A: Retry original request
+    A->>API: GET /users (with new token)
+    API-->>A: 200 OK
+    A-->>S: Response data
+    S-->>C: Data
+```
+
+Implementation Highlights:
+
+· api.js with interceptors.
+· authService.js with login, refreshToken.
+· userService.js with getUsers, createUser.
+· AuthContext to store user info and provide login/logout.
+
+---
+
+20. Module 08 – Quick Revision
+
+· Fetch API is built-in; Axios offers more features.
+· Axios instance centralizes config and enables interceptors.
+· Request interceptor: attach tokens, headers.
+· Response interceptor: handle errors, refresh token.
+· Loading state with useState and finally.
+· Error handling: normalize errors, show user-friendly messages.
+· Service layer: separate HTTP calls from components.
+· Token refresh: use interceptor, queue, and retry logic.
+
+---
+
+21. Interview Questions – Module 08
+
+Beginner
+
+1. What is the difference between Fetch and Axios?
+      Fetch is built-in, requires manual JSON parsing and error checking. Axios is a library with automatic JSON transformation, interceptors, timeout, and better error handling.
+2. How do you make a GET request with Axios?
+      axios.get(url) returns a promise. Use .then or await to handle response.
+3. What is an Axios instance?
+      A custom configured Axios client created with axios.create() that can have default base URL, headers, and interceptors.
+
+Intermediate
+
+1. Explain the purpose of request and response interceptors.
+      Request interceptors modify outgoing requests (e.g., add authentication headers). Response interceptors process responses, handle global errors, and can automate token refresh.
+2. How would you handle loading state in a React component that fetches data?
+      Use a loading state variable, set it to true before fetch, and false in finally after the request completes. Conditionally render a spinner.
+3. What is a service layer and why is it beneficial?
+      A service layer encapsulates all API calls into functions, separating HTTP logic from UI components. It improves maintainability, testability, and reusability.
+
+Advanced
+
+1. Describe the token refresh flow using Axios interceptors.
+      In a response interceptor, when a 401 occurs, check if already refreshing. If not, set a flag, call the refresh endpoint, update tokens, retry the original request, and process any queued requests. If refresh fails, logout.
+2. How do you avoid multiple simultaneous refresh requests when many requests fail with 401?
+      Use an isRefreshing flag and a queue of pending requests. While refreshing, other failed requests are added to the queue; once refresh completes, they are resolved with the new token or rejected.
+3. What are the security considerations for storing tokens in a React app?
+      Access tokens should be kept in memory or localStorage (with XSS risk). Refresh tokens are safer in HTTP-only cookies (not accessible from JS). Never store secrets in frontend code; use environment variables for public config only.
+
+Scenario-Based
+
+Q: Your app has multiple API endpoints. How would you organize API calls?
+Answer: I would create a service layer with modules for each domain (e.g., userService, authService). All modules use a shared Axios instance configured with base URL and interceptors. Components import service functions and handle loading/error states.
+
+Coding Questions
+
+1. Write an Axios request interceptor that adds a JWT token from localStorage.
+
+```javascript
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+```
+
+2. Create a custom hook useFetch that uses Axios to fetch data and returns { data, loading, error }.
+
+```jsx
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(url);
+        if (!cancelled) setData(res.data);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { cancelled = true; };
+  }, [url]);
+
+  return { data, loading, error };
+}
+```
+
+---
+
+22. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Not checking response.ok with Fetch Use Axios or manually check status
+Hardcoding URLs in components Use Axios instance and environment variables
+Storing refresh token in localStorage Prefer HTTP-only cookies
+Not handling token refresh queue Implement proper queue to avoid multiple refreshes
+Ignoring loading/error states Always provide feedback to users
+Duplicating API logic Create service layer
+Not normalizing errors Use interceptors or utility functions
+
+---
+
+23. Testing API Integration
+
+· Mock Axios/Fetch in unit tests (using jest.mock or MSW).
+· Test service functions return correct data.
+· Test interceptors with mocked requests.
+· Use Mock Service Worker (MSW) for integration testing.
+· Simulate 401 and verify token refresh flow.
+
+---
+
+This concludes Module 08: API Integration. The next module is Module 09: React Router, covering routing concepts, nested routes, protected routes, and more.
+
 
