@@ -81,14 +81,14 @@ HTML exists because the web needed a universal, simple language to describe docu
 None, it is the starting point of web development.
 
 1.5 Core Concepts
-
+```
 · Elements: tags like <h1>, <p>, <div>.
 · Attributes: provide additional information (e.g., id, class, src).
 · Semantic HTML: elements that convey meaning (<header>, <nav>, <footer>).
 · Forms: user input collection (<input>, <textarea>).
 · Tables & Lists: structured data display.
 · Media: <img>, <video>, <audio>.
-
+```
 1.6 Syntax
 
 ```html
