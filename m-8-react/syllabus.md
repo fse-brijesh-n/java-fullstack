@@ -2313,3 +2313,3545 @@ This concludes Module 02: React Fundamentals. The next module will cover Events 
 
 
 
+Module 03: Events & DOM
+
+This module covers how React handles events and interacts with the Document Object Model (DOM). You will learn about event handling, synthetic events, event propagation, common event types, and how to access and manipulate DOM elements using refs. By the end, you will be able to build interactive components that respond to user input and integrate with the underlying DOM when necessary.
+
+---
+
+1. Event Handling
+
+1.1 Definition
+
+Event handling in React refers to the process of responding to user interactions (clicks, keyboard input, form submissions, etc.) by attaching event listener functions to JSX elements. React uses a declarative syntax where event handlers are passed as props, typically named with the on prefix (e.g., onClick, onChange).
+
+1.2 Why It Exists
+
+Web applications are interactive; they must respond to user actions. React provides a unified, cross-browser way to handle events using its synthetic event system, abstracting away browser inconsistencies and providing performance optimizations through event delegation.
+
+1.3 Purpose
+
+· Capture user input and interactions
+· Trigger state updates and side effects
+· Create dynamic, responsive UIs
+
+1.4 Syntax
+
+```jsx
+<button onClick={handleClick}>Click me</button>
+```
+
+The handler function can be defined inline or passed as a reference.
+
+1.5 Basic Example
+
+```jsx
+function App() {
+  const handleClick = () => {
+    alert('Button clicked!');
+  };
+
+  return <button onClick={handleClick}>Click</button>;
+}
+```
+
+1.6 Important Notes
+
+· React events are named using camelCase (e.g., onClick not onclick).
+· Event handlers receive a SyntheticEvent object, not the native event.
+· In React, return false does not prevent default behavior; you must call preventDefault().
+
+---
+
+2. Synthetic Events
+
+2.1 Definition
+
+A SyntheticEvent is a cross-browser wrapper around the browser's native event. React creates these objects to normalize event properties and behavior across different browsers.
+
+2.2 Why It Exists
+
+To ensure consistent event handling regardless of browser differences. It also enables React's event pooling (though pooling is mostly removed in React 17+), where synthetic events are reused for performance.
+
+2.3 Key Characteristics
+
+· Implements the same interface as native events (e.g., preventDefault, stopPropagation, target, currentTarget).
+· In React 17+, event pooling is no longer performed; each event is a fresh object.
+· Synthetic events are automatically destroyed after the event handler completes (in older versions), so you cannot access event properties asynchronously unless you call event.persist() (deprecated in React 17).
+
+2.4 Accessing Native Event
+
+You can access the underlying native event via event.nativeEvent.
+
+2.5 Example
+
+```jsx
+function App() {
+  const handleClick = (event) => {
+    console.log(event);          // SyntheticEvent
+    console.log(event.nativeEvent); // NativeEvent
+  };
+
+  return <button onClick={handleClick}>Click</button>;
+}
+```
+
+---
+
+3. Event Object
+
+3.1 Definition
+
+The event object is the parameter passed to the event handler. In React, it is a SyntheticEvent instance that contains information about the event (e.g., target element, mouse coordinates, key pressed).
+
+3.2 Common Properties
+
+Property Description
+target The element that triggered the event
+currentTarget The element the handler is attached to (in React, often the same as target unless using delegation)
+type The event type (e.g., 'click')
+preventDefault() Prevents the default browser action
+stopPropagation() Stops the event from bubbling further
+
+3.3 Example
+
+```jsx
+const handleChange = (event) => {
+  console.log(event.target.value); // Input's current value
+};
+```
+
+---
+
+4. Event Propagation
+
+4.1 Definition
+
+Event propagation describes the path an event takes through the DOM tree. It consists of three phases:
+
+1. Capturing phase: The event travels from the root to the target element.
+2. Target phase: The event reaches the target.
+3. Bubbling phase: The event travels back up from the target to the root.
+
+4.2 Why It Matters
+
+Understanding propagation allows you to control event flow, implement event delegation, and avoid unintended side effects.
+
+---
+
+5. Event Bubbling
+
+5.1 Definition
+
+Event bubbling is the process where an event triggered on a child element "bubbles" up to its ancestors. If a parent has an event listener for the same event type, it will be invoked after the child's handler.
+
+5.2 Example
+
+```jsx
+function App() {
+  const handleChildClick = () => console.log('Child clicked');
+  const handleParentClick = () => console.log('Parent clicked');
+
+  return (
+    <div onClick={handleParentClick}>
+      <button onClick={handleChildClick}>Click</button>
+    </div>
+  );
+}
+// Output on click: "Child clicked" then "Parent clicked"
+```
+
+5.3 In React
+
+React's synthetic events also bubble, but they are attached to the root of the React tree (React 17+) for delegation, though the behavior from the developer's perspective remains the same.
+
+---
+
+6. Event Capturing
+
+6.1 Definition
+
+Event capturing is the opposite of bubbling: the event travels from the root down to the target element. In React, capturing is less commonly used, but you can attach capturing-phase listeners by appending Capture to the event name (e.g., onClickCapture).
+
+6.2 Example
+
+```jsx
+<div onClickCapture={handleParentCapture}>
+  <button onClick={handleChildClick}>Click</button>
+</div>
+```
+
+When clicking the button, handleParentCapture fires first, then handleChildClick.
+
+---
+
+7. stopPropagation
+
+7.1 Definition
+
+stopPropagation() is a method on the SyntheticEvent that stops the event from continuing to propagate (bubbling or capturing) further in the DOM tree.
+
+7.2 Why Use It
+
+To prevent parent event handlers from being triggered when a child is clicked, ensuring isolated behavior.
+
+7.3 Example
+
+```jsx
+const handleChildClick = (event) => {
+  event.stopPropagation();
+  console.log('Child clicked');
+};
+const handleParentClick = () => console.log('Parent clicked');
+
+<div onClick={handleParentClick}>
+  <button onClick={handleChildClick}>Click</button>
+</div>
+// Output: only "Child clicked"
+```
+
+7.4 Caution
+
+Overusing stopPropagation can make event flow harder to debug. Use it only when necessary.
+
+---
+
+8. preventDefault
+
+8.1 Definition
+
+preventDefault() prevents the browser's default action associated with the event (e.g., form submission, link navigation, context menu).
+
+8.2 Why Use It
+
+To handle events entirely in JavaScript without triggering native browser behavior.
+
+8.3 Example: Prevent form submission
+
+```jsx
+const handleSubmit = (event) => {
+  event.preventDefault();
+  // Perform custom form handling
+};
+
+<form onSubmit={handleSubmit}>
+  <button type="submit">Submit</button>
+</form>
+```
+
+---
+
+9. Mouse Events
+
+9.1 Definition
+
+Mouse events are triggered by interactions with a mouse (or touchpad). Common React mouse events include:
+
+· onClick
+· onDoubleClick
+· onMouseDown
+· onMouseUp
+· onMouseEnter
+· onMouseLeave
+· onMouseMove
+· onContextMenu
+
+9.2 Example
+
+```jsx
+function App() {
+  const handleMouseEnter = () => console.log('Mouse entered');
+  const handleMouseLeave = () => console.log('Mouse left');
+
+  return (
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      Hover over me
+    </div>
+  );
+}
+```
+
+---
+
+10. Keyboard Events
+
+10.1 Definition
+
+Keyboard events are triggered by key presses. Common events:
+
+· onKeyDown
+· onKeyUp
+· onKeyPress (deprecated in favor of onKeyDown)
+
+10.2 Event Properties
+
+· key: The character or key name (e.g., 'Enter', 'a').
+· code: The physical key position (e.g., 'Enter', 'KeyA').
+· altKey, ctrlKey, shiftKey, metaKey: Boolean modifiers.
+
+10.3 Example: Handling Enter key
+
+```jsx
+const handleKeyDown = (event) => {
+  if (event.key === 'Enter') {
+    console.log('Enter pressed');
+  }
+};
+
+<input onKeyDown={handleKeyDown} />
+```
+
+---
+
+11. Form Events
+
+11.1 Definition
+
+Form events are specific to form elements and submission. The most common is onSubmit, but also onChange, onInput, onInvalid, etc.
+
+11.2 Example: Controlled form with submit
+
+```jsx
+function Form() {
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert(`Submitted: ${name}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+---
+
+12. Change Events
+
+12.1 Definition
+
+onChange fires when the value of an input, textarea, or select element changes. In React, onChange behaves like the input event (fires on every keystroke) rather than the native change event (fires on blur).
+
+12.2 Example
+
+```jsx
+const [text, setText] = useState('');
+<input value={text} onChange={(e) => setText(e.target.value)} />
+```
+
+12.3 Why It Differs from Native
+
+React normalizes onChange to provide consistent behavior across browsers, making it fire for every input change, which is essential for controlled components.
+
+---
+
+13. Focus Events
+
+13.1 Definition
+
+Focus events occur when an element gains or loses focus. Common events:
+
+· onFocus: When element receives focus.
+· onBlur: When element loses focus.
+
+13.2 Example
+
+```jsx
+<input 
+  onFocus={() => console.log('Focused')}
+  onBlur={() => console.log('Blurred')}
+/>
+```
+
+---
+
+14. useRef
+
+14.1 Definition
+
+useRef is a React hook that returns a mutable ref object whose .current property is initialized to the provided argument. It persists across renders and can be used to store any mutable value, but is most commonly used to access DOM elements.
+
+14.2 Why It Exists
+
+To allow imperative access to DOM elements and to store mutable values without causing re-renders.
+
+14.3 Syntax
+
+```jsx
+const ref = useRef(initialValue);
+```
+
+14.4 Accessing DOM Elements
+
+```jsx
+import { useRef, useEffect } from 'react';
+
+function App() {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus(); // Focus the input on mount
+  }, []);
+
+  return <input ref={inputRef} />;
+}
+```
+
+14.5 Important Notes
+
+· Changing ref.current does not trigger a re-render.
+· Attach ref to a JSX element using the ref attribute.
+· In functional components, refs cannot be passed as props (but can be forwarded via forwardRef).
+
+---
+
+15. DOM Manipulation
+
+15.1 Definition
+
+React encourages a declarative approach where you update state and let React update the DOM. However, there are cases where you need to directly manipulate DOM elements (e.g., focusing, measuring sizes, integrating with third-party libraries). This is done using refs.
+
+15.2 When to Use Direct DOM Manipulation
+
+· Managing focus, selection, or media playback
+· Triggering animations
+· Integrating with non-React libraries
+· Measuring element dimensions/positions
+
+15.3 Best Practices
+
+· Use refs sparingly; prefer declarative state/props when possible.
+· Perform DOM reads/writes inside useEffect to avoid side effects during render.
+· Clean up any DOM changes to avoid memory leaks.
+
+---
+
+16. Accessing DOM Elements
+
+16.1 Using Callback Refs (alternative to useRef)
+
+```jsx
+function App() {
+  let myElement = null;
+
+  const setRef = (element) => {
+    myElement = element;
+  };
+
+  useEffect(() => {
+    if (myElement) {
+      // Do something
+    }
+  }, []);
+
+  return <div ref={setRef}>Hello</div>;
+}
+```
+
+16.2 Using useRef with multiple elements (array of refs)
+
+```jsx
+const itemsRef = useRef([]);
+
+<div ref={el => itemsRef.current[i] = el}>Item</div>
+```
+
+---
+
+17. Forwarding Refs
+
+17.1 Definition
+
+Ref forwarding is a technique that allows a parent component to pass a ref down to a child component, giving the parent direct access to the child's DOM node or component instance.
+
+17.2 Why It Exists
+
+Functional components do not have instances, and refs are not accessible via props. forwardRef solves this by enabling ref forwarding to inner DOM elements or class components.
+
+17.3 Syntax
+
+```jsx
+const Child = React.forwardRef((props, ref) => {
+  return <input ref={ref} {...props} />;
+});
+
+function Parent() {
+  const inputRef = useRef(null);
+  return <Child ref={inputRef} />;
+}
+```
+
+17.4 Use Cases
+
+· Wrapping a custom input component that needs to expose focus/blur methods
+· Integrating with higher-order components that need to pass refs
+
+17.5 Example: Custom Input with forwardRef
+
+```jsx
+const TextInput = forwardRef((props, ref) => {
+  return <input type="text" ref={ref} {...props} />;
+});
+
+function Parent() {
+  const ref = useRef();
+  const focusInput = () => ref.current.focus();
+  return (
+    <>
+      <TextInput ref={ref} />
+      <button onClick={focusInput}>Focus</button>
+    </>
+  );
+}
+```
+
+---
+
+18. Module 03 – Quick Revision
+
+· React events are synthetic, camelCase, and attached via props.
+· preventDefault stops default behavior; stopPropagation stops bubbling.
+· Event propagation has capturing, target, and bubbling phases.
+· useRef provides mutable references to DOM elements and values.
+· Direct DOM manipulation is done via refs, ideally in useEffect.
+· forwardRef allows passing refs to child components.
+
+---
+
+19. Interview Questions – Module 03
+
+Beginner
+
+1. How do you handle a button click in React?
+      Attach an onClick prop to the button with a function handler.
+2. What is a synthetic event?
+      A cross-browser wrapper around native events that provides consistent behavior and properties.
+3. What is the difference between preventDefault and stopPropagation?
+      preventDefault stops the browser's default action; stopPropagation stops the event from bubbling to parent elements.
+
+Intermediate
+
+1. Explain event bubbling and capturing in React.
+      Bubbling is when an event propagates from the target element up to ancestors; capturing is the opposite (from root to target). React events bubble by default; capturing is achieved with onClickCapture style props.
+2. How do you access a DOM element in React?
+      Using the useRef hook: create a ref, attach it via the ref attribute, and access the element via ref.current.
+3. What is the purpose of forwardRef?
+      It allows a parent component to pass a ref down to a child, giving direct access to the child's DOM node or instance.
+
+Advanced
+
+1. How does React's event delegation work?
+      In React 17+, React attaches event listeners to the root DOM container (the element where the React tree is mounted) rather than to individual elements. Events are then dispatched to the appropriate component via synthetic event propagation.
+2. Why is it not recommended to directly mutate the DOM in React?
+      Direct DOM mutations can lead to inconsistencies between React's virtual DOM and the real DOM, causing bugs when React tries to reconcile changes. React should own the DOM; use refs only for imperative operations that cannot be done declaratively.
+3. How would you manage focus on an input after it mounts?
+      Use a ref and useEffect to focus the input when the component mounts:
+   ```jsx
+   useEffect(() => {
+     inputRef.current.focus();
+   }, []);
+   ```
+
+Scenario-Based
+
+Q: You have a custom dropdown component and need to close it when clicking outside. How would you implement this?
+Answer: Use a ref for the dropdown container, and add an event listener to the document for mousedown or click that checks if the click target is outside the ref. If outside, call a function to close the dropdown. Clean up the listener in useEffect to avoid leaks.
+
+Coding Questions
+
+1. Write a component that logs the value of an input every time the user types.
+
+```jsx
+function LogInput() {
+  const [value, setValue] = useState('');
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    console.log(e.target.value);
+  };
+  return <input value={value} onChange={handleChange} />;
+}
+```
+
+2. Create a button that prevents its default action when clicked (e.g., for a form submit).
+
+```jsx
+function SubmitButton() {
+  const handleClick = (e) => {
+    e.preventDefault();
+    console.log('Default prevented');
+  };
+  return <button type="submit" onClick={handleClick}>Submit</button>;
+}
+```
+
+---
+
+20. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Forgetting to call preventDefault on form submit Always handle form submission in onSubmit with preventDefault
+Mutating the DOM directly instead of using state Use refs only for imperative tasks, rely on React state for UI
+Attaching event listeners manually inside components without cleanup Use useEffect with cleanup or React's synthetic events
+Overusing stopPropagation Use sparingly; consider alternative designs
+Not using forwardRef when needed Use forwardRef to expose DOM handles in custom components
+
+---
+
+21. Real-World Scenario: Autocomplete Input
+
+Problem: Build an autocomplete input that suggests items based on user typing. It must focus automatically on mount, close suggestions when clicking outside, and handle keyboard navigation (arrow keys, Enter).
+
+Solution using this module's concepts:
+
+· Use useRef to focus the input on mount.
+· Use onChange to update state and filter suggestions.
+· Use onKeyDown to handle arrow keys and Enter.
+· Use a ref for the suggestions container and document event listener (via useEffect) to close when clicking outside.
+· Use preventDefault to prevent form submission on Enter.
+
+Implementation (simplified):
+
+```jsx
+import { useState, useRef, useEffect } from 'react';
+
+function Autocomplete({ items }) {
+  const [query, setQuery] = useState('');
+  const [filtered, setFiltered] = useState([]);
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus();
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    setFiltered(items.filter(item => item.toLowerCase().includes(value.toLowerCase())));
+    setOpen(true);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div ref={containerRef}>
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+      />
+      {open && filtered.length > 0 && (
+        <ul>
+          {filtered.map(item => <li key={item}>{item}</li>)}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+This concludes Module 03: Events & DOM. The next module is Module 04: Components & Lifecycle.
+
+
+
+Module 03: Events & DOM
+
+This module covers how React handles events and interacts with the Document Object Model (DOM). You will learn about event handling, synthetic events, event propagation, common event types, and how to access and manipulate DOM elements using refs. By the end, you will be able to build interactive components that respond to user input and integrate with the underlying DOM when necessary.
+
+---
+
+1. Event Handling
+
+1.1 Definition
+
+Event handling in React refers to the process of responding to user interactions (clicks, keyboard input, form submissions, etc.) by attaching event listener functions to JSX elements. React uses a declarative syntax where event handlers are passed as props, typically named with the on prefix (e.g., onClick, onChange).
+
+1.2 Why It Exists
+
+Web applications are interactive; they must respond to user actions. React provides a unified, cross-browser way to handle events using its synthetic event system, abstracting away browser inconsistencies and providing performance optimizations through event delegation.
+
+1.3 Purpose
+
+· Capture user input and interactions
+· Trigger state updates and side effects
+· Create dynamic, responsive UIs
+
+1.4 Syntax
+
+```jsx
+<button onClick={handleClick}>Click me</button>
+```
+
+The handler function can be defined inline or passed as a reference.
+
+1.5 Basic Example
+
+```jsx
+function App() {
+  const handleClick = () => {
+    alert('Button clicked!');
+  };
+
+  return <button onClick={handleClick}>Click</button>;
+}
+```
+
+1.6 Important Notes
+
+· React events are named using camelCase (e.g., onClick not onclick).
+· Event handlers receive a SyntheticEvent object, not the native event.
+· In React, return false does not prevent default behavior; you must call preventDefault().
+
+---
+
+2. Synthetic Events
+
+2.1 Definition
+
+A SyntheticEvent is a cross-browser wrapper around the browser's native event. React creates these objects to normalize event properties and behavior across different browsers.
+
+2.2 Why It Exists
+
+To ensure consistent event handling regardless of browser differences. It also enables React's event pooling (though pooling is mostly removed in React 17+), where synthetic events are reused for performance.
+
+2.3 Key Characteristics
+
+· Implements the same interface as native events (e.g., preventDefault, stopPropagation, target, currentTarget).
+· In React 17+, event pooling is no longer performed; each event is a fresh object.
+· Synthetic events are automatically destroyed after the event handler completes (in older versions), so you cannot access event properties asynchronously unless you call event.persist() (deprecated in React 17).
+
+2.4 Accessing Native Event
+
+You can access the underlying native event via event.nativeEvent.
+
+2.5 Example
+
+```jsx
+function App() {
+  const handleClick = (event) => {
+    console.log(event);          // SyntheticEvent
+    console.log(event.nativeEvent); // NativeEvent
+  };
+
+  return <button onClick={handleClick}>Click</button>;
+}
+```
+
+---
+
+3. Event Object
+
+3.1 Definition
+
+The event object is the parameter passed to the event handler. In React, it is a SyntheticEvent instance that contains information about the event (e.g., target element, mouse coordinates, key pressed).
+
+3.2 Common Properties
+
+Property Description
+target The element that triggered the event
+currentTarget The element the handler is attached to (in React, often the same as target unless using delegation)
+type The event type (e.g., 'click')
+preventDefault() Prevents the default browser action
+stopPropagation() Stops the event from bubbling further
+
+3.3 Example
+
+```jsx
+const handleChange = (event) => {
+  console.log(event.target.value); // Input's current value
+};
+```
+
+---
+
+4. Event Propagation
+
+4.1 Definition
+
+Event propagation describes the path an event takes through the DOM tree. It consists of three phases:
+
+1. Capturing phase: The event travels from the root to the target element.
+2. Target phase: The event reaches the target.
+3. Bubbling phase: The event travels back up from the target to the root.
+
+4.2 Why It Matters
+
+Understanding propagation allows you to control event flow, implement event delegation, and avoid unintended side effects.
+
+---
+
+5. Event Bubbling
+
+5.1 Definition
+
+Event bubbling is the process where an event triggered on a child element "bubbles" up to its ancestors. If a parent has an event listener for the same event type, it will be invoked after the child's handler.
+
+5.2 Example
+
+```jsx
+function App() {
+  const handleChildClick = () => console.log('Child clicked');
+  const handleParentClick = () => console.log('Parent clicked');
+
+  return (
+    <div onClick={handleParentClick}>
+      <button onClick={handleChildClick}>Click</button>
+    </div>
+  );
+}
+// Output on click: "Child clicked" then "Parent clicked"
+```
+
+5.3 In React
+
+React's synthetic events also bubble, but they are attached to the root of the React tree (React 17+) for delegation, though the behavior from the developer's perspective remains the same.
+
+---
+
+6. Event Capturing
+
+6.1 Definition
+
+Event capturing is the opposite of bubbling: the event travels from the root down to the target element. In React, capturing is less commonly used, but you can attach capturing-phase listeners by appending Capture to the event name (e.g., onClickCapture).
+
+6.2 Example
+
+```jsx
+<div onClickCapture={handleParentCapture}>
+  <button onClick={handleChildClick}>Click</button>
+</div>
+```
+
+When clicking the button, handleParentCapture fires first, then handleChildClick.
+
+---
+
+7. stopPropagation
+
+7.1 Definition
+
+stopPropagation() is a method on the SyntheticEvent that stops the event from continuing to propagate (bubbling or capturing) further in the DOM tree.
+
+7.2 Why Use It
+
+To prevent parent event handlers from being triggered when a child is clicked, ensuring isolated behavior.
+
+7.3 Example
+
+```jsx
+const handleChildClick = (event) => {
+  event.stopPropagation();
+  console.log('Child clicked');
+};
+const handleParentClick = () => console.log('Parent clicked');
+
+<div onClick={handleParentClick}>
+  <button onClick={handleChildClick}>Click</button>
+</div>
+// Output: only "Child clicked"
+```
+
+7.4 Caution
+
+Overusing stopPropagation can make event flow harder to debug. Use it only when necessary.
+
+---
+
+8. preventDefault
+
+8.1 Definition
+
+preventDefault() prevents the browser's default action associated with the event (e.g., form submission, link navigation, context menu).
+
+8.2 Why Use It
+
+To handle events entirely in JavaScript without triggering native browser behavior.
+
+8.3 Example: Prevent form submission
+
+```jsx
+const handleSubmit = (event) => {
+  event.preventDefault();
+  // Perform custom form handling
+};
+
+<form onSubmit={handleSubmit}>
+  <button type="submit">Submit</button>
+</form>
+```
+
+---
+
+9. Mouse Events
+
+9.1 Definition
+
+Mouse events are triggered by interactions with a mouse (or touchpad). Common React mouse events include:
+
+· onClick
+· onDoubleClick
+· onMouseDown
+· onMouseUp
+· onMouseEnter
+· onMouseLeave
+· onMouseMove
+· onContextMenu
+
+9.2 Example
+
+```jsx
+function App() {
+  const handleMouseEnter = () => console.log('Mouse entered');
+  const handleMouseLeave = () => console.log('Mouse left');
+
+  return (
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      Hover over me
+    </div>
+  );
+}
+```
+
+---
+
+10. Keyboard Events
+
+10.1 Definition
+
+Keyboard events are triggered by key presses. Common events:
+
+· onKeyDown
+· onKeyUp
+· onKeyPress (deprecated in favor of onKeyDown)
+
+10.2 Event Properties
+
+· key: The character or key name (e.g., 'Enter', 'a').
+· code: The physical key position (e.g., 'Enter', 'KeyA').
+· altKey, ctrlKey, shiftKey, metaKey: Boolean modifiers.
+
+10.3 Example: Handling Enter key
+
+```jsx
+const handleKeyDown = (event) => {
+  if (event.key === 'Enter') {
+    console.log('Enter pressed');
+  }
+};
+
+<input onKeyDown={handleKeyDown} />
+```
+
+---
+
+11. Form Events
+
+11.1 Definition
+
+Form events are specific to form elements and submission. The most common is onSubmit, but also onChange, onInput, onInvalid, etc.
+
+11.2 Example: Controlled form with submit
+
+```jsx
+function Form() {
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert(`Submitted: ${name}`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+---
+
+12. Change Events
+
+12.1 Definition
+
+onChange fires when the value of an input, textarea, or select element changes. In React, onChange behaves like the input event (fires on every keystroke) rather than the native change event (fires on blur).
+
+12.2 Example
+
+```jsx
+const [text, setText] = useState('');
+<input value={text} onChange={(e) => setText(e.target.value)} />
+```
+
+12.3 Why It Differs from Native
+
+React normalizes onChange to provide consistent behavior across browsers, making it fire for every input change, which is essential for controlled components.
+
+---
+
+13. Focus Events
+
+13.1 Definition
+
+Focus events occur when an element gains or loses focus. Common events:
+
+· onFocus: When element receives focus.
+· onBlur: When element loses focus.
+
+13.2 Example
+
+```jsx
+<input 
+  onFocus={() => console.log('Focused')}
+  onBlur={() => console.log('Blurred')}
+/>
+```
+
+---
+
+14. useRef
+
+14.1 Definition
+
+useRef is a React hook that returns a mutable ref object whose .current property is initialized to the provided argument. It persists across renders and can be used to store any mutable value, but is most commonly used to access DOM elements.
+
+14.2 Why It Exists
+
+To allow imperative access to DOM elements and to store mutable values without causing re-renders.
+
+14.3 Syntax
+
+```jsx
+const ref = useRef(initialValue);
+```
+
+14.4 Accessing DOM Elements
+
+```jsx
+import { useRef, useEffect } from 'react';
+
+function App() {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus(); // Focus the input on mount
+  }, []);
+
+  return <input ref={inputRef} />;
+}
+```
+
+14.5 Important Notes
+
+· Changing ref.current does not trigger a re-render.
+· Attach ref to a JSX element using the ref attribute.
+· In functional components, refs cannot be passed as props (but can be forwarded via forwardRef).
+
+---
+
+15. DOM Manipulation
+
+15.1 Definition
+
+React encourages a declarative approach where you update state and let React update the DOM. However, there are cases where you need to directly manipulate DOM elements (e.g., focusing, measuring sizes, integrating with third-party libraries). This is done using refs.
+
+15.2 When to Use Direct DOM Manipulation
+
+· Managing focus, selection, or media playback
+· Triggering animations
+· Integrating with non-React libraries
+· Measuring element dimensions/positions
+
+15.3 Best Practices
+
+· Use refs sparingly; prefer declarative state/props when possible.
+· Perform DOM reads/writes inside useEffect to avoid side effects during render.
+· Clean up any DOM changes to avoid memory leaks.
+
+---
+
+16. Accessing DOM Elements
+
+16.1 Using Callback Refs (alternative to useRef)
+
+```jsx
+function App() {
+  let myElement = null;
+
+  const setRef = (element) => {
+    myElement = element;
+  };
+
+  useEffect(() => {
+    if (myElement) {
+      // Do something
+    }
+  }, []);
+
+  return <div ref={setRef}>Hello</div>;
+}
+```
+
+16.2 Using useRef with multiple elements (array of refs)
+
+```jsx
+const itemsRef = useRef([]);
+
+<div ref={el => itemsRef.current[i] = el}>Item</div>
+```
+
+---
+
+17. Forwarding Refs
+
+17.1 Definition
+
+Ref forwarding is a technique that allows a parent component to pass a ref down to a child component, giving the parent direct access to the child's DOM node or component instance.
+
+17.2 Why It Exists
+
+Functional components do not have instances, and refs are not accessible via props. forwardRef solves this by enabling ref forwarding to inner DOM elements or class components.
+
+17.3 Syntax
+
+```jsx
+const Child = React.forwardRef((props, ref) => {
+  return <input ref={ref} {...props} />;
+});
+
+function Parent() {
+  const inputRef = useRef(null);
+  return <Child ref={inputRef} />;
+}
+```
+
+17.4 Use Cases
+
+· Wrapping a custom input component that needs to expose focus/blur methods
+· Integrating with higher-order components that need to pass refs
+
+17.5 Example: Custom Input with forwardRef
+
+```jsx
+const TextInput = forwardRef((props, ref) => {
+  return <input type="text" ref={ref} {...props} />;
+});
+
+function Parent() {
+  const ref = useRef();
+  const focusInput = () => ref.current.focus();
+  return (
+    <>
+      <TextInput ref={ref} />
+      <button onClick={focusInput}>Focus</button>
+    </>
+  );
+}
+```
+
+---
+
+18. Module 03 – Quick Revision
+
+· React events are synthetic, camelCase, and attached via props.
+· preventDefault stops default behavior; stopPropagation stops bubbling.
+· Event propagation has capturing, target, and bubbling phases.
+· useRef provides mutable references to DOM elements and values.
+· Direct DOM manipulation is done via refs, ideally in useEffect.
+· forwardRef allows passing refs to child components.
+
+---
+
+19. Interview Questions – Module 03
+
+Beginner
+
+1. How do you handle a button click in React?
+      Attach an onClick prop to the button with a function handler.
+2. What is a synthetic event?
+      A cross-browser wrapper around native events that provides consistent behavior and properties.
+3. What is the difference between preventDefault and stopPropagation?
+      preventDefault stops the browser's default action; stopPropagation stops the event from bubbling to parent elements.
+
+Intermediate
+
+1. Explain event bubbling and capturing in React.
+      Bubbling is when an event propagates from the target element up to ancestors; capturing is the opposite (from root to target). React events bubble by default; capturing is achieved with onClickCapture style props.
+2. How do you access a DOM element in React?
+      Using the useRef hook: create a ref, attach it via the ref attribute, and access the element via ref.current.
+3. What is the purpose of forwardRef?
+      It allows a parent component to pass a ref down to a child, giving direct access to the child's DOM node or instance.
+
+Advanced
+
+1. How does React's event delegation work?
+      In React 17+, React attaches event listeners to the root DOM container (the element where the React tree is mounted) rather than to individual elements. Events are then dispatched to the appropriate component via synthetic event propagation.
+2. Why is it not recommended to directly mutate the DOM in React?
+      Direct DOM mutations can lead to inconsistencies between React's virtual DOM and the real DOM, causing bugs when React tries to reconcile changes. React should own the DOM; use refs only for imperative operations that cannot be done declaratively.
+3. How would you manage focus on an input after it mounts?
+      Use a ref and useEffect to focus the input when the component mounts:
+   ```jsx
+   useEffect(() => {
+     inputRef.current.focus();
+   }, []);
+   ```
+
+Scenario-Based
+
+Q: You have a custom dropdown component and need to close it when clicking outside. How would you implement this?
+Answer: Use a ref for the dropdown container, and add an event listener to the document for mousedown or click that checks if the click target is outside the ref. If outside, call a function to close the dropdown. Clean up the listener in useEffect to avoid leaks.
+
+Coding Questions
+
+1. Write a component that logs the value of an input every time the user types.
+
+```jsx
+function LogInput() {
+  const [value, setValue] = useState('');
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    console.log(e.target.value);
+  };
+  return <input value={value} onChange={handleChange} />;
+}
+```
+
+2. Create a button that prevents its default action when clicked (e.g., for a form submit).
+
+```jsx
+function SubmitButton() {
+  const handleClick = (e) => {
+    e.preventDefault();
+    console.log('Default prevented');
+  };
+  return <button type="submit" onClick={handleClick}>Submit</button>;
+}
+```
+
+---
+
+20. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Forgetting to call preventDefault on form submit Always handle form submission in onSubmit with preventDefault
+Mutating the DOM directly instead of using state Use refs only for imperative tasks, rely on React state for UI
+Attaching event listeners manually inside components without cleanup Use useEffect with cleanup or React's synthetic events
+Overusing stopPropagation Use sparingly; consider alternative designs
+Not using forwardRef when needed Use forwardRef to expose DOM handles in custom components
+
+---
+
+21. Real-World Scenario: Autocomplete Input
+
+Problem: Build an autocomplete input that suggests items based on user typing. It must focus automatically on mount, close suggestions when clicking outside, and handle keyboard navigation (arrow keys, Enter).
+
+Solution using this module's concepts:
+
+· Use useRef to focus the input on mount.
+· Use onChange to update state and filter suggestions.
+· Use onKeyDown to handle arrow keys and Enter.
+· Use a ref for the suggestions container and document event listener (via useEffect) to close when clicking outside.
+· Use preventDefault to prevent form submission on Enter.
+
+Implementation (simplified):
+
+```jsx
+import { useState, useRef, useEffect } from 'react';
+
+function Autocomplete({ items }) {
+  const [query, setQuery] = useState('');
+  const [filtered, setFiltered] = useState([]);
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus();
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    setFiltered(items.filter(item => item.toLowerCase().includes(value.toLowerCase())));
+    setOpen(true);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div ref={containerRef}>
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+      />
+      {open && filtered.length > 0 && (
+        <ul>
+          {filtered.map(item => <li key={item}>{item}</li>)}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+This concludes Module 03: Events & DOM. The next module is Module 04: Components & Lifecycle.
+
+
+
+
+Module 04: Components & Lifecycle
+
+This module dives deep into React component types, the component lifecycle, and the hooks that manage side effects and performance optimization. Understanding these concepts is crucial for building efficient, bug-free React applications.
+
+---
+
+1. Introduction
+
+React components go through a series of phases from creation to destruction. These phases are collectively called the component lifecycle. In modern React, functional components use hooks like useEffect to handle lifecycle events, while class components use explicit lifecycle methods. This module covers both approaches, with emphasis on hooks as the modern standard.
+
+---
+
+2. Class Components
+
+2.1 Definition
+
+Class components are ES6 classes that extend React.Component. They have access to state via this.state, props via this.props, and lifecycle methods.
+
+2.2 Why They Existed
+
+Before React 16.8 (Hooks), class components were the only way to use state and lifecycle methods. They are still supported but are considered legacy for new code.
+
+2.3 Syntax
+
+```jsx
+import React, { Component } from 'react';
+
+class MyComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { count: 0 };
+  }
+
+  render() {
+    return <div>{this.state.count}</div>;
+  }
+}
+```
+
+2.4 Key Features
+
+· this.state for local state
+· Lifecycle methods (componentDidMount, componentDidUpdate, componentWillUnmount)
+· this.props for props
+· render() method is required
+
+2.5 Common Mistakes
+
+· Forgetting to call super(props) in constructor
+· Mutating state directly (should use setState)
+· Not binding methods (unless using arrow functions)
+
+2.6 Why Prefer Functional Components?
+
+· Simpler syntax
+· Hooks allow same capabilities without class complexities
+· Less boilerplate
+· Better performance (theoretical)
+· Easier testing and code reuse
+
+---
+
+3. Functional Components
+
+3.1 Definition
+
+Functional components are plain JavaScript functions that accept props as an argument and return JSX. They can use hooks to manage state and lifecycle.
+
+3.2 Syntax
+
+```jsx
+function MyComponent({ name }) {
+  return <div>Hello, {name}</div>;
+}
+
+// Arrow function
+const MyComponent = ({ name }) => <div>Hello, {name}</div>;
+```
+
+3.3 Hooks in Functional Components
+
+Hooks like useState, useEffect, useMemo, useCallback, etc., give functional components the ability to manage state and side effects.
+
+3.4 Advantages
+
+· Less code
+· No this binding issues
+· Easier to understand and test
+· React team recommends functional components for new code
+
+---
+
+4. Component Lifecycle
+
+4.1 Definition
+
+The component lifecycle is the sequence of stages a component goes through from mounting to unmounting. Each stage has associated methods (in class components) or hooks (in functional components) that allow you to execute code at specific times.
+
+4.2 Phases
+
+1. Mounting: Component is created and inserted into the DOM.
+2. Updating: Component re-renders due to changes in props or state.
+3. Unmounting: Component is removed from the DOM.
+
+4.3 Lifecycle Diagram
+
+```mermaid
+flowchart TD
+    A[Mounting] --> B[componentDidMount / useEffect]
+    B --> C[Updating]
+    C --> D[componentDidUpdate / useEffect]
+    D --> C
+    C --> E[Unmounting]
+    E --> F[componentWillUnmount / cleanup]
+```
+
+4.4 Mounting Phase
+
+In class components:
+
+· constructor() – Initialize state and bind methods.
+· render() – Return JSX.
+· componentDidMount() – Called after component is inserted into DOM. Used for side effects (data fetching, subscriptions).
+
+In functional components:
+
+· Component function body (render)
+· useEffect(() => { ... }, []) – runs after mount.
+
+4.5 Updating Phase
+
+Triggered by changes in props or state.
+
+Class components:
+
+· render() again
+· componentDidUpdate(prevProps, prevState) – called after update. Use for side effects based on changes.
+
+Functional components:
+
+· Re-run function body
+· useEffect(() => { ... }, [dependencies]) – runs when dependencies change.
+· If no dependency array, runs after every render.
+
+4.6 Unmounting Phase
+
+Class components:
+
+· componentWillUnmount() – called before component is removed. Used for cleanup (clear timers, unsubscribe, cancel network requests).
+
+Functional components:
+
+· Cleanup function returned from useEffect runs on unmount: useEffect(() => { return () => cleanup(); }, []).
+
+---
+
+5. Lifecycle Methods in Class Components
+
+5.1 componentDidMount()
+
+Definition: Called once after the component is mounted to the DOM.
+
+Use Cases:
+
+· Initial data fetching
+· Setting up subscriptions
+· Adding event listeners
+· Starting timers
+
+Example:
+
+```jsx
+class UserList extends Component {
+  state = { users: [] };
+
+  componentDidMount() {
+    fetch('/api/users')
+      .then(res => res.json())
+      .then(users => this.setState({ users }));
+  }
+
+  render() {
+    // render users
+  }
+}
+```
+
+5.2 componentDidUpdate(prevProps, prevState)
+
+Definition: Called after every update (re-render) except the initial mount.
+
+Use Cases:
+
+· Respond to prop/state changes
+· Perform side effects based on changes
+· Compare previous and current values
+
+Example:
+
+```jsx
+class UserProfile extends Component {
+  componentDidUpdate(prevProps) {
+    if (prevProps.userId !== this.props.userId) {
+      this.fetchUser(this.props.userId);
+    }
+  }
+}
+```
+
+5.3 componentWillUnmount()
+
+Definition: Called immediately before a component is unmounted and destroyed.
+
+Use Cases:
+
+· Clean up timers
+· Cancel network requests
+· Remove event listeners
+· Unsubscribe from stores/websockets
+
+Example:
+
+```jsx
+class Timer extends Component {
+  componentDidMount() {
+    this.timerId = setInterval(() => this.tick(), 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerId);
+  }
+}
+```
+
+---
+
+6. useEffect
+
+6.1 Definition
+
+useEffect is a hook that allows you to perform side effects in functional components. It combines the functionality of componentDidMount, componentDidUpdate, and componentWillUnmount into a single API.
+
+6.2 Why It Exists
+
+Side effects (data fetching, subscriptions, DOM updates) are not allowed inside the render body because they can cause bugs and UI inconsistency. useEffect runs after render, ensuring the DOM is updated before side effects execute.
+
+6.3 Syntax
+
+```jsx
+useEffect(() => {
+  // side effect code
+  return () => {
+    // cleanup (optional)
+  };
+}, [dependencies]);
+```
+
+· Effect function: Runs after render (or dependency change).
+· Cleanup function: Runs before the next effect execution and on unmount.
+· Dependency array: Controls when the effect runs.
+
+6.4 Dependency Array Behavior
+
+Dependency Array Behavior
+Omitted Runs after every render
+[] Runs only once after initial mount
+[dep1, dep2] Runs after mount and when any dependency changes
+
+6.5 useEffect Cleanup
+
+The cleanup function is used to avoid memory leaks and stale side effects. It runs:
+
+· Before the component unmounts
+· Before the effect runs again (if dependencies change)
+
+Example: Event listener with cleanup
+
+```jsx
+useEffect(() => {
+  const handleResize = () => console.log('resized');
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    window.removeEventListener('resize', handleResize);
+  };
+}, []);
+```
+
+6.6 Common Use Cases
+
+· Fetching data on mount
+· Subscribing to services
+· Setting up intervals/timers
+· Manually changing the DOM
+· Logging
+
+6.7 Comparison with Class Lifecycle Methods
+
+useEffect Pattern Class Equivalent
+useEffect(fn, []) componentDidMount
+useEffect(fn, [dep]) componentDidUpdate with condition
+useEffect(() => { return cleanup; }, []) componentWillUnmount
+useEffect(fn) (no deps) componentDidMount + componentDidUpdate
+
+---
+
+7. useLayoutEffect
+
+7.1 Definition
+
+useLayoutEffect is similar to useEffect, but it fires synchronously after all DOM mutations and before the browser paints. This makes it suitable for reading layout information and synchronously re-rendering.
+
+7.2 Difference from useEffect
+
+· useEffect runs asynchronously after paint.
+· useLayoutEffect runs synchronously before paint.
+· Use useLayoutEffect when you need to measure or mutate the DOM before the user sees the update.
+
+7.3 Use Cases
+
+· Measuring element dimensions
+· Synchronously applying visual changes
+· Avoiding flicker
+
+7.4 Syntax
+
+Same as useEffect but with useLayoutEffect.
+
+Example: Measure an element
+
+```jsx
+useLayoutEffect(() => {
+  const height = ref.current.offsetHeight;
+  console.log(height);
+}, []);
+```
+
+7.5 Caution
+
+Prefer useEffect unless you specifically need to block paint. Overusing useLayoutEffect can hurt performance.
+
+---
+
+8. useMemo
+
+8.1 Definition
+
+useMemo is a hook that memoizes the result of a function. It recomputes the memoized value only when one of its dependencies changes. This avoids expensive calculations on every render.
+
+8.2 Why It Exists
+
+To optimize performance by preventing unnecessary recalculations of expensive computations during re-renders.
+
+8.3 Syntax
+
+```jsx
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+```
+
+8.4 When to Use
+
+· Expensive calculations (e.g., sorting large arrays, complex math)
+· Referential equality needs (passing stable objects to child components wrapped in React.memo)
+· Any situation where you want to avoid recalculating a value unless inputs change.
+
+8.5 Basic Example
+
+```jsx
+const expensiveResult = useMemo(() => {
+  return expensiveFunction(data);
+}, [data]);
+```
+
+8.6 Do Not Overuse
+
+useMemo itself has overhead. Only use it for genuinely expensive operations. Premature optimization can make code harder to read.
+
+---
+
+9. useCallback
+
+9.1 Definition
+
+useCallback is a hook that returns a memoized version of a callback function. The function reference remains stable between renders unless its dependencies change.
+
+9.2 Why It Exists
+
+To prevent unnecessary re-renders of child components that rely on referential equality of props (e.g., components wrapped in React.memo). Without useCallback, a new function is created every render, causing child components to re-render.
+
+9.3 Syntax
+
+```jsx
+const memoizedCallback = useCallback(() => {
+  doSomething(a, b);
+}, [a, b]);
+```
+
+9.4 When to Use
+
+· When passing callbacks to optimized child components (React.memo)
+· When the callback is used in dependency arrays of other hooks (e.g., useEffect)
+· To maintain stable identity across renders.
+
+9.5 Example
+
+```jsx
+const handleClick = useCallback(() => {
+  setCount(c => c + 1);
+}, []);
+```
+
+9.6 Relation to useMemo
+
+useCallback(fn, deps) is equivalent to useMemo(() => fn, deps). It memoizes the function itself, not the result.
+
+---
+
+10. React.memo
+
+10.1 Definition
+
+React.memo is a higher-order component that memoizes a functional component, preventing it from re-rendering if its props are shallowly equal to the previous props.
+
+10.2 Why It Exists
+
+To optimize functional components that render the same output given the same props, avoiding unnecessary renders.
+
+10.3 Syntax
+
+```jsx
+const MemoizedComponent = React.memo(MyComponent);
+```
+
+You can also pass a custom comparison function:
+
+```jsx
+const MemoizedComponent = React.memo(MyComponent, (prevProps, nextProps) => {
+  return prevProps.id === nextProps.id;
+});
+```
+
+10.4 When to Use
+
+· Components that receive complex props but often unchanged
+· Pure functional components that render the same output for the same props
+· List items that don't depend on frequently changing data
+
+10.5 Example
+
+```jsx
+const ListItem = React.memo(({ item }) => {
+  return <li>{item.name}</li>;
+});
+```
+
+10.6 Important Notes
+
+· Shallow comparison: only top-level props are compared.
+· If props include objects/arrays, they should be memoized (with useMemo/useCallback) to benefit from React.memo.
+
+---
+
+11. Component Re-rendering
+
+11.1 What Causes Re-rendering?
+
+· State change (via setState or useState setter)
+· Parent component re-renders (child re-renders unless React.memo or other optimizations)
+· Context value changes (if component consumes context)
+· Force update (rare)
+
+11.2 How to Optimize Re-renders
+
+· Use React.memo to skip re-render when props unchanged.
+· Use useMemo for expensive calculations.
+· Use useCallback to stabilize function props.
+· Use useRef for values that shouldn't trigger re-render.
+· Split components to isolate re-render boundaries.
+· Lift state appropriately; avoid passing unnecessary props.
+
+11.3 Re-render Flow Diagram
+
+```mermaid
+flowchart TD
+    A[State/Prop Change] --> B[Re-render Component]
+    B --> C[Calculate New JSX]
+    C --> D[Compare Virtual DOM]
+    D --> E[Update Real DOM if needed]
+    E --> F[Run Effects if dependencies changed]
+```
+
+---
+
+12. Module 04 – Quick Revision
+
+· Class components use lifecycle methods; functional components use hooks.
+· useEffect handles side effects; cleanup function runs on unmount or before next effect.
+· Dependency array controls effect timing.
+· useLayoutEffect runs synchronously before paint.
+· useMemo memoizes values; useCallback memoizes functions.
+· React.memo prevents re-renders of functional components with same props.
+· Re-renders occur on state/prop changes; optimize with memoization.
+
+---
+
+13. Interview Questions – Module 04
+
+Beginner
+
+1. What are the lifecycle phases of a React component?
+      Mounting, Updating, and Unmounting.
+2. What is useEffect used for?
+      To perform side effects in functional components, such as data fetching, subscriptions, or DOM manipulation, after render.
+3. What is the difference between class components and functional components?
+      Class components use this.state, lifecycle methods, and require a render method. Functional components are simpler functions that use hooks for state and effects.
+
+Intermediate
+
+1. Explain the dependency array in useEffect.
+      The dependency array tells React when to run the effect. If omitted, it runs after every render; if [], it runs only once after mount; if it contains values, it runs when any of those values change between renders.
+2. What is the cleanup function in useEffect?
+      It's a function returned from the effect that runs before the component unmounts and before the effect runs again (if dependencies change). It is used to clean up subscriptions, timers, event listeners, etc.
+3. How does React.memo work?
+      It performs a shallow comparison of props. If props are the same as the previous render, it skips re-rendering the component, improving performance.
+
+Advanced
+
+1. When would you use useLayoutEffect over useEffect?
+      Use useLayoutEffect when you need to read layout information (e.g., element dimensions) or synchronously apply visual changes before the browser paints to avoid flicker. In most cases, useEffect is sufficient.
+2. How does useCallback help prevent unnecessary re-renders?
+      useCallback returns a memoized function, so its reference doesn't change between renders unless dependencies change. When passed as a prop to a child component wrapped in React.memo, it prevents the child from re-rendering due to a new function reference.
+3. Can you explain the difference between useMemo and useCallback?
+      useMemo memoizes the return value of a function, preventing expensive recalculations. useCallback memoizes the function itself, preserving its identity. Both optimize performance by avoiding unnecessary work on re-renders.
+
+Scenario-Based
+
+Q: Your component fetches data on mount and displays it. The component sometimes receives a new prop userId and must refetch data. How would you implement this with hooks?
+Answer: Use useEffect with [userId] as dependency. Inside the effect, perform the fetch. Also include a cleanup to ignore stale responses:
+
+```jsx
+useEffect(() => {
+  let isActive = true;
+  fetch(`/users/${userId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (isActive) setUser(data);
+    });
+  return () => { isActive = false; };
+}, [userId]);
+```
+
+Coding Questions
+
+1. Write a functional component that sets up an interval to increment a counter every second and clears it on unmount.
+
+```jsx
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setCount(c => c + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return <div>{count}</div>;
+}
+```
+
+2. Create a component that logs to console whenever a prop value changes, but not on mount.
+
+```jsx
+function LogValue({ value }) {
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    console.log('Value changed:', value);
+  }, [value]);
+
+  return <div>{value}</div>;
+}
+```
+
+---
+
+14. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Forgetting cleanup in useEffect causing memory leaks Always return cleanup when setting up subscriptions, timers, etc.
+Not specifying dependency array correctly Include all values used in effect; use ESLint exhaustive-deps rule
+Using useLayoutEffect unnecessarily Prefer useEffect; use useLayoutEffect only for pre-paint DOM reads/writes
+Overusing useMemo/useCallback Only use for expensive calculations or referential stability needed by memoized children
+Using class components in new code Use functional components with hooks
+Mutating state directly Use setter functions and immutable updates
+
+---
+
+15. Real-World Scenario: Data Fetching with Loading and Error States
+
+Problem: Build a user profile component that fetches user data from an API, shows a loading spinner while fetching, displays an error message if the request fails, and updates when a different user ID is selected.
+
+Solution:
+
+· Use useState for user, loading, error.
+· Use useEffect with [userId] to fetch data.
+· Clean up stale requests with a flag.
+· Render conditionally based on state.
+
+Architecture:
+
+```mermaid
+flowchart TD
+    A[UserProfile Component] --> B[useState: user, loading, error]
+    A --> C[useEffect fetch on userId change]
+    C --> D[Set loading true]
+    D --> E[Fetch API]
+    E -->|Success| F[Set user, loading false]
+    E -->|Error| G[Set error, loading false]
+    F --> H[Render user data]
+    G --> I[Render error message]
+    H --> J[Cleanup on unmount/new effect]
+```
+
+Implementation (simplified):
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isActive = true;
+    setLoading(true);
+    setError(null);
+
+    fetch(`/api/users/${userId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch');
+        return res.json();
+      })
+      .then(data => {
+        if (isActive) {
+          setUser(data);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        if (isActive) {
+          setError(err.message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [userId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  return <div>{user?.name}</div>;
+}
+```
+
+---
+
+This concludes Module 04: Components & Lifecycle. The next module is Module 05: Hooks, covering all React built-in hooks in depth.
+
+
+
+
+Module 05: Hooks
+
+Hooks are functions that let you "hook into" React state and lifecycle features from functional components. Introduced in React 16.8, they eliminate the need for class components in most cases. This module covers all built-in hooks and the rules for using them, as well as custom hooks.
+
+---
+
+1. Rules of Hooks
+
+1.1 Definition
+
+The Rules of Hooks are two essential rules enforced by React to ensure hooks work correctly:
+
+1. Only call hooks at the top level – not inside loops, conditions, or nested functions.
+2. Only call hooks from React functions – either functional components or custom hooks.
+
+1.2 Why They Exist
+
+React relies on the order of hook calls to correctly associate state and effects between renders. Breaking the rules leads to bugs like incorrect state or effect execution.
+
+1.3 Enforcement
+
+The eslint-plugin-react-hooks provides linting rules to enforce these rules automatically.
+
+1.4 Example of Violation
+
+```jsx
+// ❌ Bad: conditional hook
+if (condition) {
+  useState(0); // violates rules
+}
+
+// ✅ Good: hook at top level
+const [value, setValue] = useState(0);
+if (condition) {
+  // use value
+}
+```
+
+1.5 Interview Questions
+
+Q: What are the Rules of Hooks and why are they important?
+Answer: Hooks must be called at the top level and only from React functions. React relies on call order to preserve state; violating these rules leads to inconsistent state and bugs.
+
+---
+
+2. useState
+
+2.1 Definition
+
+useState is a hook that adds state to functional components. It returns an array with the current state value and a setter function to update it.
+
+2.2 Why It Exists
+
+To enable functional components to have local state without converting to class components.
+
+2.3 Syntax
+
+```jsx
+const [state, setState] = useState(initialValue);
+```
+
+· initialValue can be a value or a lazy initializer function (evaluated only once).
+· setState can accept a new value or a function that receives the previous state.
+
+2.4 Basic Example
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+2.5 Functional Updates
+
+When the new state depends on the previous state, use the functional form to avoid stale closures:
+
+```jsx
+setCount(prevCount => prevCount + 1);
+```
+
+2.6 Lazy Initialization
+
+```jsx
+const [data] = useState(() => expensiveComputation());
+```
+
+2.7 Important Notes
+
+· State updates are asynchronous; React may batch multiple updates.
+· Always treat state as immutable.
+· The setter function identity is stable; no need to memoize.
+
+2.8 Interview Questions
+
+Q: How does useState work?
+Answer: It returns a stateful value and a function to update it. React preserves the state between renders by order of hook calls.
+
+Q: What is the difference between passing a value and a function to the setter?
+Answer: Passing a value sets the state directly; passing a function receives the previous state and returns the new state, useful for updates based on the previous state.
+
+---
+
+3. useEffect
+
+3.1 Definition
+
+useEffect is a hook for performing side effects in functional components. It runs after the render is committed to the screen.
+
+3.2 Why It Exists
+
+To handle side effects (data fetching, subscriptions, manual DOM changes) that cannot be done during render.
+
+3.3 Syntax
+
+```jsx
+useEffect(() => {
+  // effect
+  return () => {
+    // cleanup (optional)
+  };
+}, [dependencies]);
+```
+
+· If dependencies omitted, runs after every render.
+· If [], runs only after mount (and cleanup on unmount).
+· If array, runs when any dependency changes.
+
+3.4 Example
+
+```jsx
+useEffect(() => {
+  document.title = `You clicked ${count} times`;
+}, [count]);
+```
+
+3.5 Cleanup
+
+Cleanup runs before the next effect and on unmount. Use it for clearing timers, unsubscribing, cancelling requests.
+
+3.6 Common Mistakes
+
+· Forgetting dependency array leads to infinite loops.
+· Not including all dependencies causes stale values.
+· Not cleaning up subscriptions leads to memory leaks.
+
+3.7 Interview Questions
+
+Q: What is the difference between useEffect and useLayoutEffect?
+Answer: useEffect runs asynchronously after paint; useLayoutEffect runs synchronously before paint. Use useLayoutEffect for DOM measurements or visual updates to avoid flicker.
+
+Q: How do you mimic componentDidMount with hooks?
+Answer: Use useEffect with an empty dependency array: useEffect(() => { ... }, []).
+
+---
+
+4. useRef
+
+4.1 Definition
+
+useRef returns a mutable ref object whose .current property persists across renders without causing re-renders.
+
+4.2 Why It Exists
+
+To access DOM elements, store mutable values, or keep a reference to a value that doesn't require re-render when changed.
+
+4.3 Syntax
+
+```jsx
+const ref = useRef(initialValue);
+```
+
+4.4 Example: DOM access
+
+```jsx
+const inputRef = useRef(null);
+useEffect(() => {
+  inputRef.current.focus();
+}, []);
+<input ref={inputRef} />;
+```
+
+4.5 Example: Mutable value without re-render
+
+```jsx
+const countRef = useRef(0);
+countRef.current++;
+```
+
+4.6 Important Notes
+
+· Changing ref.current does not trigger re-render.
+· The same ref object is returned on every render.
+· Avoid reading/writing refs during render (except lazy initialization).
+
+4.7 Interview Questions
+
+Q: What are the uses of useRef?
+Answer: Accessing DOM elements, storing mutable values that don't need re-render, and keeping references for use in effects without triggering re-renders.
+
+---
+
+5. useMemo
+
+5.1 Definition
+
+useMemo memoizes the result of a computation, recomputing only when dependencies change.
+
+5.2 Why It Exists
+
+To optimize expensive calculations and preserve referential equality for objects/arrays passed to memoized children.
+
+5.3 Syntax
+
+```jsx
+const memoizedValue = useMemo(() => computeValue(), [deps]);
+```
+
+5.4 Example
+
+```jsx
+const sortedList = useMemo(() => sortItems(items), [items]);
+```
+
+5.5 Important Notes
+
+· Use only for genuinely expensive calculations.
+· Overuse can hurt performance and readability.
+
+5.6 Interview Questions
+
+Q: When should you use useMemo?
+Answer: When you have a computationally expensive function that should not run on every render unless its inputs change, or when you need to maintain referential equality of an object/array passed to a child wrapped in React.memo.
+
+---
+
+6. useCallback
+
+6.1 Definition
+
+useCallback returns a memoized version of a callback function, keeping its identity stable across renders unless dependencies change.
+
+6.2 Why It Exists
+
+To prevent unnecessary re-renders of child components that rely on referential equality of callback props (e.g., with React.memo).
+
+6.3 Syntax
+
+```jsx
+const memoizedCallback = useCallback(() => {
+  doSomething(a, b);
+}, [a, b]);
+```
+
+6.4 Example
+
+```jsx
+const handleClick = useCallback(() => {
+  setCount(c => c + 1);
+}, []);
+```
+
+6.5 Relation to useMemo
+
+useCallback(fn, deps) is equivalent to useMemo(() => fn, deps).
+
+6.6 Important Notes
+
+· Use only when necessary; avoid premature optimization.
+· The callback itself is recreated if dependencies change.
+
+6.7 Interview Questions
+
+Q: What is the purpose of useCallback?
+Answer: To memoize a function so that its reference remains the same between renders unless dependencies change, which helps prevent unnecessary re-renders in memoized child components.
+
+---
+
+7. useReducer
+
+7.1 Definition
+
+useReducer is a hook for managing complex state logic. It accepts a reducer function and initial state, and returns the current state and a dispatch function.
+
+7.2 Why It Exists
+
+To handle state transitions that involve multiple sub-values or when the next state depends on the previous state in a complex way. It's an alternative to useState with more predictable updates.
+
+7.3 Syntax
+
+```jsx
+const [state, dispatch] = useReducer(reducer, initialState);
+```
+
+Reducer: (state, action) => newState.
+
+7.4 Example
+
+```jsx
+const initialState = { count: 0 };
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return { count: state.count + 1 };
+    case 'decrement':
+      return { count: state.count - 1 };
+    default:
+      return state;
+  }
+}
+
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return (
+    <>
+      Count: {state.count}
+      <button onClick={() => dispatch({ type: 'increment' })}>+</button>
+    </>
+  );
+}
+```
+
+7.5 Lazy Initialization
+
+Third argument: init function to compute initial state.
+
+```jsx
+const [state, dispatch] = useReducer(reducer, initialArg, init);
+```
+
+7.6 When to Use
+
+· State logic is complex (multiple actions, transitions).
+· Next state depends on previous state in a predictable way.
+· State updates are frequent and related.
+
+7.7 Interview Questions
+
+Q: When would you use useReducer instead of useState?
+Answer: When state logic is complex, involves multiple sub-values, or when the next state depends on the previous state in a complex way. useReducer provides a more predictable state update pattern and makes state transitions easier to test.
+
+---
+
+8. useContext
+
+8.1 Definition
+
+useContext is a hook that subscribes a component to a React context, allowing it to read the current context value without prop drilling.
+
+8.2 Why It Exists
+
+To share global data (theme, user, language) across the component tree without manually passing props through every level.
+
+8.3 Syntax
+
+```jsx
+const value = useContext(MyContext);
+```
+
+8.4 Example
+
+```jsx
+const ThemeContext = createContext('light');
+
+function ThemedButton() {
+  const theme = useContext(ThemeContext);
+  return <button className={theme}>Button</button>;
+}
+```
+
+8.5 Important Notes
+
+· The component re-renders when the context value changes.
+· Context should be used sparingly for global data; for frequent updates, other solutions (Redux) may be better.
+
+8.6 Interview Questions
+
+Q: What is useContext and when would you use it?
+Answer: useContext lets you consume a React context value in a functional component. It's used for sharing global data (e.g., user authentication, theme) without prop drilling.
+
+---
+
+9. useId
+
+9.1 Definition
+
+useId is a hook for generating unique IDs that are stable across server and client, useful for accessibility attributes (like linking label to input).
+
+9.2 Why It Exists
+
+To generate unique IDs for form elements and accessibility, especially in server-rendered or concurrent React applications.
+
+9.3 Syntax
+
+```jsx
+const id = useId();
+```
+
+9.4 Example
+
+```jsx
+function EmailField() {
+  const id = useId();
+  return (
+    <>
+      <label htmlFor={id}>Email</label>
+      <input id={id} type="email" />
+    </>
+  );
+}
+```
+
+9.5 Important Notes
+
+· IDs are globally unique but not guaranteed to be deterministic.
+· Do not use for keys in lists; use a stable identifier.
+
+9.6 Interview Questions
+
+Q: What is useId used for?
+Answer: It generates unique IDs that are stable across server and client, primarily for accessibility attributes (like htmlFor and id).
+
+---
+
+10. useLayoutEffect
+
+10.1 Definition
+
+useLayoutEffect is similar to useEffect, but it fires synchronously after all DOM mutations and before the browser paints.
+
+10.2 Why It Exists
+
+To perform DOM measurements or synchronous visual updates that must happen before the user sees the UI, preventing flicker.
+
+10.3 Syntax
+
+```jsx
+useLayoutEffect(() => {
+  // effect
+  return () => {
+    // cleanup
+  };
+}, [deps]);
+```
+
+10.4 Example: Measure element
+
+```jsx
+const ref = useRef();
+useLayoutEffect(() => {
+  const rect = ref.current.getBoundingClientRect();
+  console.log(rect);
+}, []);
+```
+
+10.5 Differences from useEffect
+
+ useEffect useLayoutEffect
+Timing After paint Before paint
+Use case Side effects, data fetching DOM measurements, visual updates
+
+10.6 Interview Questions
+
+Q: When would you use useLayoutEffect instead of useEffect?
+Answer: Use useLayoutEffect when you need to read layout information (e.g., dimensions) or synchronously modify the DOM before the browser paints to avoid visual glitches.
+
+---
+
+11. useImperativeHandle
+
+11.1 Definition
+
+useImperativeHandle customizes the instance value that is exposed to parent components when using ref. It is used together with forwardRef.
+
+11.2 Why It Exists
+
+To control what a parent component can access via a ref to a child component, exposing only specific methods or properties instead of the entire DOM node or component instance.
+
+11.3 Syntax
+
+```jsx
+useImperativeHandle(ref, () => ({
+  // exposed methods/properties
+  focus: () => { ... }
+}), [dependencies]);
+```
+
+11.4 Example
+
+```jsx
+const Input = forwardRef((props, ref) => {
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current.focus(),
+    clear: () => inputRef.current.value = ''
+  }));
+  return <input ref={inputRef} />;
+});
+
+// Parent
+const parentRef = useRef();
+<Input ref={parentRef} />;
+parentRef.current.focus();
+```
+
+11.5 When to Use
+
+When you need to expose imperative methods from a custom component, but not the entire DOM API.
+
+11.6 Interview Questions
+
+Q: What is the purpose of useImperativeHandle?
+Answer: It allows a parent component to access only specific methods or properties of a child component via a ref, instead of exposing the entire underlying DOM node or component instance.
+
+---
+
+12. useDebugValue
+
+12.1 Definition
+
+useDebugValue displays a label for custom hooks in React DevTools, making debugging easier.
+
+12.2 Why It Exists
+
+To provide additional information about custom hook state or internal values when inspecting components in DevTools.
+
+12.3 Syntax
+
+```jsx
+useDebugValue(value);
+// or
+useDebugValue(value, formatFunction);
+```
+
+12.4 Example
+
+```jsx
+function useFriendStatus(friendID) {
+  const [isOnline, setIsOnline] = useState(null);
+  useDebugValue(isOnline ? 'Online' : 'Offline');
+  return isOnline;
+}
+```
+
+12.5 Important Notes
+
+· Only works inside custom hooks.
+· Use sparingly; overuse can clutter DevTools.
+
+12.6 Interview Questions
+
+Q: What is useDebugValue used for?
+Answer: It adds a label to custom hooks in React DevTools to help developers inspect internal hook state or values during debugging.
+
+---
+
+13. useTransition
+
+13.1 Definition
+
+useTransition is a hook that returns a stateful value for tracking the pending state of a transition and a function to start it. Transitions are non-blocking, allowing React to keep the UI responsive while rendering lower-priority updates.
+
+13.2 Why It Exists
+
+To improve user experience by marking certain updates as non-urgent, so React can prioritize more important updates (like typing) and avoid blocking the UI.
+
+13.3 Syntax
+
+```jsx
+const [isPending, startTransition] = useTransition();
+```
+
+13.4 Example
+
+```jsx
+function App() {
+  const [input, setInput] = useState('');
+  const [list, setList] = useState([]);
+  const [isPending, startTransition] = useTransition();
+
+  const handleChange = (e) => {
+    setInput(e.target.value);
+    startTransition(() => {
+      // expensive filtering
+      setList(filterItems(e.target.value));
+    });
+  };
+
+  return (
+    <>
+      <input value={input} onChange={handleChange} />
+      {isPending ? 'Loading...' : <List items={list} />}
+    </>
+  );
+}
+```
+
+13.5 Important Notes
+
+· Only use for state updates that can be delayed without breaking UX.
+· React can interrupt and restart transitions if new urgent updates occur.
+
+13.6 Interview Questions
+
+Q: What is a transition in React and when would you use it?
+Answer: A transition is a non-urgent state update that React can interrupt to prioritize more urgent updates (e.g., typing). Use it to keep the UI responsive when performing expensive updates like filtering large lists.
+
+---
+
+14. useDeferredValue
+
+14.1 Definition
+
+useDeferredValue returns a deferred version of a value that lags behind the original. It is useful for keeping the UI responsive when the value is used in expensive rendering, allowing React to show stale content while computing new.
+
+14.2 Why It Exists
+
+To defer re-rendering of parts of the UI that depend on a frequently changing value (e.g., search input) without blocking the input itself.
+
+14.3 Syntax
+
+```jsx
+const deferredValue = useDeferredValue(value);
+```
+
+14.4 Example
+
+```jsx
+function SearchResults({ query }) {
+  const deferredQuery = useDeferredValue(query);
+  // Expensive computation using deferredQuery
+  return <Results query={deferredQuery} />;
+}
+```
+
+14.5 Difference from useTransition
+
+· useTransition wraps state updates in a callback.
+· useDeferredValue works on a value that is already changing; it schedules a deferred version.
+
+14.6 Interview Questions
+
+Q: What is useDeferredValue and how does it improve performance?
+Answer: It returns a deferred version of a value, allowing React to keep the UI responsive by rendering stale content temporarily while computing the new value. It's useful for expensive rendering that depends on rapidly changing input.
+
+---
+
+15. useSyncExternalStore
+
+15.1 Definition
+
+useSyncExternalStore is a hook for subscribing to an external store (e.g., Redux store, browser APIs) and reading the current snapshot. It ensures consistency during concurrent rendering.
+
+15.2 Why It Exists
+
+To safely read from external mutable sources in React, avoiding tearing (inconsistent UI) during concurrent rendering and server-side rendering.
+
+15.3 Syntax
+
+```jsx
+const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot?);
+```
+
+· subscribe: function that registers a callback and returns an unsubscribe function.
+· getSnapshot: returns the current snapshot of the store.
+· getServerSnapshot: optional, for server rendering.
+
+15.4 Example: Subscribing to a custom store
+
+```jsx
+const state = useSyncExternalStore(
+  store.subscribe,
+  () => store.getState()
+);
+```
+
+15.5 Use Cases
+
+· Integrating with Redux or other external state management.
+· Subscribing to browser APIs (like online status).
+
+15.6 Interview Questions
+
+Q: What problem does useSyncExternalStore solve?
+Answer: It provides a safe way to subscribe to external stores and read their current value, ensuring that the component doesn't tear during concurrent rendering by always reading the latest snapshot consistently.
+
+---
+
+16. Custom Hooks
+
+16.1 Definition
+
+Custom hooks are JavaScript functions that start with use and can call other hooks. They allow you to extract and reuse stateful logic across multiple components.
+
+16.2 Why They Exist
+
+To share logic between components without duplicating code or using complex patterns like render props or higher-order components.
+
+16.3 Rules
+
+· Name must start with use.
+· Must follow the Rules of Hooks.
+· Can accept arguments and return any value.
+
+16.4 Example: useWindowSize
+
+```jsx
+function useWindowSize() {
+  const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return size;
+}
+
+// Usage
+function App() {
+  const { width, height } = useWindowSize();
+  return <div>{width} x {height}</div>;
+}
+```
+
+16.5 Benefits
+
+· Reusability of stateful logic.
+· Encapsulation of complex behavior.
+· Composition of hooks.
+
+16.6 Interview Questions
+
+Q: What is a custom hook and why would you create one?
+Answer: A custom hook is a function that starts with use and encapsulates logic using built-in hooks. It enables sharing stateful logic across components, reducing duplication and improving maintainability.
+
+Q: Give an example of when you would create a custom hook.
+Answer: When multiple components need to fetch data and handle loading/error states, you could create a useFetch hook that encapsulates the fetching logic and returns { data, loading, error }.
+
+---
+
+17. Module 05 – Quick Revision
+
+· Hooks must be called at top level and only in React functions.
+· useState for local state; useReducer for complex state logic.
+· useEffect for side effects; useLayoutEffect for pre-paint effects.
+· useRef for DOM and mutable values.
+· useMemo and useCallback for performance optimization.
+· useContext for consuming context.
+· useId for unique IDs; useDebugValue for debugging custom hooks.
+· useTransition and useDeferredValue for concurrent rendering optimizations.
+· useSyncExternalStore for external stores.
+· Custom hooks extract and reuse logic.
+
+---
+
+18. Interview Questions – Module 05
+
+Beginner
+
+1. What are hooks?
+      Hooks are functions that let you use state and lifecycle features in functional components.
+2. Name three built-in hooks and their purpose.
+      useState for state, useEffect for side effects, useRef for mutable references and DOM access.
+3. What is the first rule of hooks?
+      Only call hooks at the top level of your React function.
+
+Intermediate
+
+1. Explain the difference between useMemo and useCallback.
+      useMemo memoizes the return value of a function; useCallback memoizes the function itself.
+2. How does useReducer differ from useState?
+      useReducer is preferable for complex state transitions; it uses a reducer function and dispatch actions. useState is simpler and good for independent state values.
+3. What is the cleanup function in useEffect for?
+      It runs before the component unmounts and before the next effect execution, used to clean up subscriptions, timers, etc.
+
+Advanced
+
+1. Describe a scenario where you would use useTransition.
+      When you have an expensive search/filter operation on a large list, and you want to keep the input responsive while processing the filter in a non-blocking transition.
+2. How does useSyncExternalStore prevent tearing?
+      It ensures that React always reads a consistent snapshot of external state, even during concurrent rendering, by using the getSnapshot function and subscribing to changes.
+3. Can you create a custom hook? Provide an example.
+      Example: useLocalStorage that reads/writes a state value to localStorage and keeps it in sync.
+
+Scenario-Based
+
+Q: You need to debounce an input for API calls. How would you implement it with hooks?
+Answer: Use useEffect with a timeout inside, clearing the timeout on each change. Or create a custom useDebounce hook.
+
+Coding Questions
+
+1. Write a custom hook useCounter that provides count and increment, decrement functions.
+
+```jsx
+function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  const increment = () => setCount(c => c + 1);
+  const decrement = () => setCount(c => c - 1);
+  return { count, increment, decrement };
+}
+```
+
+2. Implement a useLocalStorage hook that syncs state with localStorage.
+
+```jsx
+function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(storedValue));
+  }, [key, storedValue]);
+
+  return [storedValue, setStoredValue];
+}
+```
+
+---
+
+19. Common Mistakes & Best Practices (Module 05)
+
+Mistake Best Practice
+Calling hooks conditionally Always call hooks at the top level
+Not including dependencies in useEffect/useMemo/useCallback Use exhaustive-deps lint rule and include all used values
+Using useEffect for synchronous DOM measurements Use useLayoutEffect
+Overusing useMemo/useCallback Only optimize when necessary; premature optimization complicates code
+Mutating state directly Use immutable updates and setter functions
+Using index as key in lists Use stable unique IDs
+Forgetting to clean up in useEffect Return cleanup function when needed
+
+---
+
+20. Real-World Scenario: Building a Debounced Search Hook
+
+Problem: A search input triggers API calls on every keystroke, causing performance and rate-limiting issues. Need to debounce the input.
+
+Solution: Create a custom hook useDebounce that delays the value.
+
+Implementation:
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// Usage
+function Search() {
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      fetchSearchResults(debouncedQuery);
+    }
+  }, [debouncedQuery]);
+
+  return <input value={query} onChange={e => setQuery(e.target.value)} />;
+}
+```
+
+This uses useState and useEffect inside a custom hook, demonstrating hook composition.
+
+---
+
+This concludes Module 05: Hooks. The next module is Module 06: Advanced State, covering Context API, useReducer, state management concepts, and Axios.
+
+
+Module 06: Advanced State
+
+This module explores advanced state management patterns in React. You will learn how to manage state across components using the Context API, understand concepts like lifting state up and colocation, leverage useReducer for complex state, and integrate Axios for data fetching that feeds into state. By the end, you will be equipped to handle state in medium-to-large applications without external libraries.
+
+---
+
+1. State Management Concepts
+
+1.1 Definition
+
+State management refers to the strategies and patterns used to handle application data that changes over time and influences the UI. In React, state can be local to a component, lifted to a common ancestor, or shared globally through context or external stores.
+
+1.2 Why It Exists
+
+As applications grow, managing state scattered across many components becomes difficult. Without a clear strategy, you encounter prop drilling, inconsistent updates, and hard-to-debug state changes. State management patterns provide structure and predictability.
+
+1.3 Purpose
+
+· Ensure data consistency
+· Minimize unnecessary re-renders
+· Make state flow predictable
+· Facilitate code maintenance and testing
+
+1.4 Types of State
+
+· Local state: Used by a single component (e.g., form inputs)
+· Shared state: Needed by multiple components (lifted up)
+· Global state: App-wide data (e.g., user, theme)
+· Server state: Data fetched from an API (caching, loading, etc.)
+· URL state: State represented in the URL (e.g., query params)
+
+1.5 Decision Factors
+
+· Scope: How many components need access?
+· Complexity: How many state transitions are involved?
+· Frequency: How often does the state update?
+· Lifespan: How long does the state persist?
+
+---
+
+2. Lifting State Up
+
+2.1 Definition
+
+Lifting state up is the practice of moving state to the closest common ancestor of components that need to share it. The ancestor owns the state and passes it down as props, along with callback functions to update it.
+
+2.2 Why It Exists
+
+React's unidirectional data flow means state is owned by a single component. When siblings need to share state, lifting it up provides a single source of truth.
+
+2.3 When to Use
+
+· Two or more child components need to read the same state.
+· A child component needs to update state that another sibling consumes.
+
+2.4 Example
+
+```jsx
+function TemperatureInput({ value, onChange }) {
+  return <input value={value} onChange={(e) => onChange(e.target.value)} />;
+}
+
+function Calculator() {
+  const [temperature, setTemperature] = useState('');
+
+  return (
+    <div>
+      <TemperatureInput value={temperature} onChange={setTemperature} />
+      <BoilingVerdict celsius={temperature} />
+    </div>
+  );
+}
+```
+
+2.5 Benefits
+
+· Single source of truth
+· Predictable data flow
+· Easier debugging
+
+2.6 Downsides
+
+· Can lead to prop drilling if the state must be passed through many levels.
+
+2.7 Interview Question
+
+Q: What does "lifting state up" mean and why is it useful?
+Answer: It means moving state to the nearest common ancestor of components that need it, so that multiple components can share and update the same data. This creates a single source of truth and avoids duplication.
+
+---
+
+3. State Colocation
+
+3.1 Definition
+
+State colocation is the principle of placing state as close as possible to where it is used. If only one component uses a piece of state, it should live in that component, not in a global store or a distant parent.
+
+3.2 Why It Exists
+
+Overly centralized state can cause unnecessary re-renders and make components less reusable. Colocation reduces coupling and improves performance by limiting the scope of state changes.
+
+3.3 Example
+
+If a Navbar has a dropdown that toggles, its open/closed state should be inside the Navbar component, not in the root App component.
+
+3.4 Best Practices
+
+· Start with local state; lift only when needed.
+· Avoid premature optimization or premature lifting.
+· Keep state as local as possible.
+
+3.5 Interview Question
+
+Q: What is state colocation and why is it recommended?
+Answer: State colocation means keeping state close to where it is used. It improves performance by reducing re-renders of unrelated components and makes code easier to understand and maintain.
+
+---
+
+4. Derived State
+
+4.1 Definition
+
+Derived state is data that can be computed from existing state or props. Instead of storing it separately, you calculate it during render (or memoize if expensive).
+
+4.2 Why It Exists
+
+Storing redundant state leads to bugs when one value changes but the other doesn't. Derived state ensures consistency and reduces the number of state variables to manage.
+
+4.3 Example
+
+If you have a list of items and a filter string, the filtered list is derived state. You should not store it separately; compute it from the list and filter.
+
+```jsx
+const [items, setItems] = useState([...]);
+const [filter, setFilter] = useState('');
+
+const filteredItems = items.filter(item => item.includes(filter));
+```
+
+4.4 When to Use useMemo for Derived State
+
+If the computation is expensive, wrap it in useMemo to avoid recalculating on every render.
+
+```jsx
+const filteredItems = useMemo(() => expensiveFilter(items, filter), [items, filter]);
+```
+
+4.5 Common Mistake
+
+Storing both items and filteredItems in state and updating both when filter changes. This can cause inconsistency if one update is forgotten.
+
+4.6 Interview Question
+
+Q: What is derived state and why should you avoid storing it?
+Answer: Derived state is state that can be computed from other state/props. Storing it duplicates data and risks inconsistency; computing it keeps a single source of truth.
+
+---
+
+5. useReducer (Advanced Patterns)
+
+5.1 Overview
+
+useReducer is a hook that manages state using a reducer function. It is particularly useful for complex state logic with multiple actions and transitions.
+
+5.2 When to Prefer useReducer over useState
+
+· State involves multiple sub-values that must be updated together.
+· Transitions depend on previous state in nontrivial ways.
+· Many actions cause similar state changes.
+· You want to separate state transition logic from component code.
+
+5.3 Advanced Example: Shopping Cart
+
+```jsx
+const initialState = { items: [], total: 0 };
+
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'ADD_ITEM': {
+      const newItems = [...state.items, action.payload];
+      return { items: newItems, total: state.total + action.payload.price };
+    }
+    case 'REMOVE_ITEM': {
+      const removed = state.items.find(item => item.id === action.payload.id);
+      const newItems = state.items.filter(item => item.id !== action.payload.id);
+      return { items: newItems, total: state.total - removed.price };
+    }
+    case 'CLEAR':
+      return initialState;
+    default:
+      return state;
+  }
+}
+
+function Cart() {
+  const [state, dispatch] = useReducer(cartReducer, initialState);
+  // ...
+}
+```
+
+5.4 Lazy Initialization with useReducer
+
+```jsx
+const [state, dispatch] = useReducer(reducer, initialArg, init);
+```
+
+init is a function that receives initialArg and returns the initial state. Useful when the initial state is expensive to compute.
+
+5.5 Combining with Context
+
+useReducer is often paired with Context to provide a global state management solution.
+
+5.6 Interview Question
+
+Q: How would you use useReducer for a complex form with many fields?
+Answer: Use a reducer that handles actions for each field update, validation, and submission, keeping all form state in one object and dispatching actions to update it.
+
+---
+
+6. useContext (In-Depth)
+
+6.1 Definition
+
+useContext subscribes a functional component to a Context object. It reads the current context value from the nearest matching Provider above the component.
+
+6.2 Why It Exists
+
+To consume context without the render-prop pattern or Context.Consumer, making component code cleaner.
+
+6.3 Syntax
+
+```jsx
+const value = useContext(MyContext);
+```
+
+6.4 Context Value Equality
+
+React uses reference equality (Object.is) to determine if the context value changed. If the Provider's value prop is a new object each render, all consumers re-render. To avoid this, memoize the value with useMemo.
+
+6.5 Example with Memoized Value
+
+```jsx
+const ThemeContext = createContext();
+
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const value = useMemo(() => ({ theme, setTheme }), [theme]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+```
+
+6.6 Interview Question
+
+Q: How does useContext find the current context value?
+Answer: It traverses the component tree upwards to find the nearest <MyContext.Provider> and returns its value prop. If no Provider exists, it returns the default value.
+
+---
+
+7. Context API
+
+7.1 Definition
+
+The Context API is a built-in React feature that provides a way to pass data through the component tree without manually passing props at every level. It consists of:
+
+· React.createContext() – creates a context object.
+· Context.Provider – supplies a value to all consumers below.
+· Context.Consumer (legacy) or useContext hook – reads the value.
+
+7.2 Why It Exists
+
+To solve prop drilling, where intermediate components must pass data they don't use.
+
+7.3 When to Use Context
+
+· Global data: theme, user authentication, locale
+· Data that is needed by many components at different nesting levels
+· When prop drilling becomes unwieldy
+
+7.4 When Not to Use Context
+
+· Frequently changing values (e.g., input state) – context updates cause all consumers to re-render.
+· If data is only needed by a few nearby components, lifting state up may be simpler.
+· For performance-critical high-frequency updates, external state managers like Redux with selectors may be better.
+
+7.5 Creating a Context
+
+```jsx
+const UserContext = createContext({
+  user: null,
+  login: () => {},
+  logout: () => {}
+});
+```
+
+7.6 Interview Question
+
+Q: What is the Context API and what problem does it solve?
+Answer: It is a way to share values across the component tree without passing props manually at every level. It solves prop drilling by allowing components to subscribe to a context directly.
+
+---
+
+8. Context Provider
+
+8.1 Definition
+
+The Provider component is part of a context object and accepts a value prop. It supplies that value to all descendant consumers. There can be multiple providers for the same context (nested), and the nearest one wins.
+
+8.2 Syntax
+
+```jsx
+<MyContext.Provider value={/* some value */}>
+  {children}
+</MyContext.Provider>
+```
+
+8.3 Role
+
+· Defines the scope of the context.
+· Updates to value trigger re-renders for consumers.
+
+8.4 Best Practices
+
+· Wrap a portion of the tree, not necessarily the whole app, to limit re-renders.
+· Memoize the value object if it contains multiple values or functions.
+· Create a custom provider component to encapsulate state and context logic.
+
+8.5 Example: Custom Auth Provider
+
+```jsx
+const AuthContext = createContext();
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const login = (userData) => setUser(userData);
+  const logout = () => setUser(null);
+  const value = useMemo(() => ({ user, login, logout }), [user]);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+```
+
+8.6 Interview Question
+
+Q: Why should you memoize the value prop of a Provider?
+Answer: If the value is a new object each render, all consumers will re-render on every provider render, even if the actual data didn't change. Memoizing prevents unnecessary re-renders.
+
+---
+
+9. Context Consumer
+
+9.1 Definition
+
+Context.Consumer is a legacy component that subscribes to context changes. It uses a render prop function to receive the current context value.
+
+9.2 Syntax
+
+```jsx
+<MyContext.Consumer>
+  {value => /* render something with value */}
+</MyContext.Consumer>
+```
+
+9.3 Modern Alternative
+
+Use useContext in functional components, which is simpler and more readable.
+
+9.4 When You Might Still See Consumer
+
+· In class components (can't use hooks).
+· In certain render-prop patterns.
+
+9.5 Interview Question
+
+Q: What is the difference between Context.Consumer and useContext?
+Answer: Context.Consumer is a component that uses a render prop to access context, suitable for class components. useContext is a hook for functional components, providing the same functionality more concisely.
+
+---
+
+10. Multiple Contexts
+
+10.1 Definition
+
+In a React application, you may have several independent pieces of global state (e.g., theme, auth, locale). You can create multiple contexts and nest providers.
+
+10.2 Why Use Multiple Contexts
+
+· Keeps concerns separated.
+· Avoids one giant context causing unnecessary re-renders across unrelated consumers.
+· Each context can be consumed independently.
+
+10.3 Example Structure
+
+```jsx
+function AppProviders({ children }) {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+```
+
+10.4 Consuming Multiple Contexts in a Component
+
+```jsx
+function Header() {
+  const theme = useContext(ThemeContext);
+  const { user } = useContext(AuthContext);
+  const lang = useContext(LanguageContext);
+  // use them
+}
+```
+
+10.5 Best Practices
+
+· Keep each context focused.
+· Consider composing providers into a single AppProviders component for cleanliness.
+· Avoid deeply nested provider pyramids if possible; use a composition pattern.
+
+10.6 Interview Question
+
+Q: How do you handle multiple contexts without creating a provider pyramid?
+Answer: You can compose providers into a single component that nests them internally, providing a clean API. Alternatively, you can use a custom hook that aggregates multiple contexts.
+
+---
+
+11. Axios (Integration with State)
+
+11.1 Definition
+
+Axios is a popular JavaScript library for making HTTP requests. It provides a promise-based API, request/response interceptors, automatic JSON transformation, and better error handling compared to the native Fetch API. In React, Axios is commonly used to fetch data that then updates component state.
+
+11.2 Why It Exists
+
+Fetch API has limitations: no timeout by default, manual JSON parsing, less convenient error handling, and no interceptors. Axios addresses these and offers a cleaner, more feature-rich experience.
+
+11.3 Installation
+
+```bash
+npm install axios
+```
+
+11.4 Basic Usage
+
+```jsx
+import axios from 'axios';
+
+axios.get('/api/users')
+  .then(response => {
+    console.log(response.data);
+  })
+  .catch(error => {
+    console.error(error);
+  });
+```
+
+11.5 Using Axios with React State
+
+```jsx
+function UserList() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get('/api/users')
+      .then(res => {
+        setUsers(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+11.6 Using Axios with useReducer
+
+For more complex data fetching, you can combine Axios with useReducer to manage loading, data, and error states in one place.
+
+11.7 Interview Question
+
+Q: Why would you use Axios instead of Fetch?
+Answer: Axios provides a simpler API, automatic JSON transformation, request/response interceptors, timeout support, and better error handling. Fetch requires more manual work but is built-in and has no extra dependency.
+
+---
+
+12. Real-World Scenario: Building a Theme and User Authentication Context
+
+Problem: An application needs a global theme (light/dark) and user authentication state, accessible from many components without prop drilling.
+
+Solution: Use two separate contexts with custom providers. Memoize context values to prevent unnecessary re-renders.
+
+Architecture:
+
+```mermaid
+flowchart TD
+    App --> AppProviders
+    AppProviders --> ThemeProvider
+    AppProviders --> AuthProvider
+    ThemeProvider --> ThemeContext
+    AuthProvider --> AuthContext
+    ChildComponents --> useContext(ThemeContext)
+    ChildComponents --> useContext(AuthContext)
+```
+
+Implementation (simplified):
+
+```jsx
+// ThemeContext.js
+const ThemeContext = createContext();
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+  const value = useMemo(() => ({ theme, toggleTheme }), [theme]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+export const useTheme = () => useContext(ThemeContext);
+
+// AuthContext.js
+const AuthContext = createContext();
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const login = (userData) => setUser(userData);
+  const logout = () => setUser(null);
+  const value = useMemo(() => ({ user, login, logout }), [user]);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+export const useAuth = () => useContext(AuthContext);
+```
+
+Usage in a component:
+
+```jsx
+function Header() {
+  const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  return (
+    <header className={theme}>
+      <span>{user?.name}</span>
+      <button onClick={toggleTheme}>Toggle Theme</button>
+      <button onClick={logout}>Logout</button>
+    </header>
+  );
+}
+```
+
+This demonstrates multiple contexts, custom providers, and memoized values.
+
+---
+
+13. Module 06 – Quick Revision
+
+· Lifting state up: move shared state to nearest common ancestor.
+· Colocation: keep state close to where it's used.
+· Derived state: compute from existing state, don't store.
+· useReducer is ideal for complex state transitions.
+· Context API provides global state via Provider/Consumer or useContext.
+· Memoize context value to prevent unnecessary re-renders.
+· Use multiple contexts for separation of concerns.
+· Axios is a popular HTTP client for data fetching that updates state.
+
+---
+
+14. Interview Questions – Module 06
+
+Beginner
+
+1. What is the Context API?
+      A built-in React feature that allows sharing data across components without prop drilling.
+2. What is the difference between useState and useReducer?
+      useState is simpler for independent state; useReducer is better for complex state logic with multiple actions.
+3. What is Axios?
+      A promise-based HTTP client for making requests, offering features like interceptors and automatic JSON parsing.
+
+Intermediate
+
+1. Explain lifting state up with an example.
+      When two sibling components need to share state, you move state to their parent and pass it down as props and callbacks.
+2. Why is state colocation important?
+      It reduces unnecessary re-renders and keeps components decoupled, improving maintainability.
+3. How do you optimize a Context Provider?
+      Memoize the value prop with useMemo so it only changes when actual data changes, preventing consumers from re-rendering unnecessarily.
+
+Advanced
+
+1. When would you choose a state management library like Redux over Context API?
+      When you have a large application with high-frequency updates, need fine-grained re-render control, time-travel debugging, middleware, or when context value updates cause performance issues.
+2. Explain how derived state can cause bugs if not handled correctly.
+      Storing derived state separately can lead to inconsistencies if one part updates but not the other. Computing derived state at render time ensures consistency.
+3. How would you design a global notification system using Context and useReducer?
+      Create a NotificationContext with a reducer managing an array of notifications, dispatch actions to add/remove notifications, and a provider that renders notifications and a hook to use the context.
+
+Scenario-Based
+
+Q: Your app has a sidebar that needs user info from a parent, but it's nested 5 levels deep. How would you avoid prop drilling?
+Answer: Use the Context API to provide user data at a high level, then consume it in the sidebar with useContext, or lift state to a context provider.
+
+Coding Questions
+
+1. Implement a context for managing a shopping cart with useReducer.
+
+```jsx
+const CartContext = createContext();
+
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'ADD_ITEM': return [...state, action.payload];
+    case 'REMOVE_ITEM': return state.filter(item => item.id !== action.payload.id);
+    default: return state;
+  }
+}
+
+function CartProvider({ children }) {
+  const [cart, dispatch] = useReducer(cartReducer, []);
+  const value = useMemo(() => ({ cart, dispatch }), [cart]);
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+```
+
+---
+
+15. Common Mistakes & Best Practices
+
+Mistake Best Practice
+Storing derived state in state variables Compute derived state during render
+Lifting state too high or too early Keep state local until multiple components need it
+Not memoizing context value Use useMemo to keep value stable
+Using context for high-frequency updates Prefer local state or external store with selectors
+Overusing useReducer for simple state Use useState when state is simple
+Not separating concerns in contexts Create focused contexts instead of one giant context
+
+---
+
+This concludes Module 06: Advanced State. The next module is Module 07: Forms, covering controlled/uncontrolled components, form validation, React Hook Form, and Zod.
+
+
+
+
+
